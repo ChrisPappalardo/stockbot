@@ -11,7 +11,7 @@ stockbot
 
 Stock market analysis library written in Python.
 
-* Non-free software: CC BY-NC-ND 4.0 license
+* License: Creative Commons (CC) BY-NC-ND 4.0 https://creativecommons.org/licenses/by-nc-nd/4.0/
 * Documentation: https://stockbot.readthedocs.org.
 
 Features
