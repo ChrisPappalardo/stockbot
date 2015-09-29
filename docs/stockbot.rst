@@ -4,10 +4,10 @@ stockbot package
 Submodules
 ----------
 
-stockbot.stockbot module
-------------------------
+stockbot.sources module
+-----------------------
 
-.. automodule:: stockbot.stockbot
+.. automodule:: stockbot.sources
     :members:
     :undoc-members:
     :show-inheritance:

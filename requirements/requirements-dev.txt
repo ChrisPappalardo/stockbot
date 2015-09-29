@@ -1,6 +1,10 @@
 bumpversion==0.5.3
 coverage==4.0
 flake8==2.4.1
+mock==1.3.0
+pandas==0.16.2
+python-dateutil==2.4.2
+pytz==2015.6
 Sphinx==1.3.1
 tox==2.1.1
 wheel==0.23.0

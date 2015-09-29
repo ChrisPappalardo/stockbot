@@ -17,4 +17,4 @@ Stock market analysis library written in Python.
 Features
 --------
 
-* TODO
+* market data sourcing from Yahoo! and CNBC

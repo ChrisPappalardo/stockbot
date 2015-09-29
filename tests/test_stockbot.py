@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
+'''
 test_stockbot
-----------------------------------
+-------------
 
-Tests for `stockbot` module.
-"""
+Tests `stockbot` package import.
+'''
 
 import unittest
-
-from stockbot import stockbot
+import stockbot
 
 
 class TestStockbot(unittest.TestCase):
@@ -18,8 +17,8 @@ class TestStockbot(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_foo(self):
-        assert(stockbot.foo())
+    def test_stockbot(self):
+        assert(stockbot.__name__ == 'stockbot')
 
     def tearDown(self):
         pass
