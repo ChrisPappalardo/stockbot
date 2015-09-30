@@ -2,8 +2,7 @@
 
 '''
 
-The `sources` module provides provides functions and classes that are
-useful for:
+The `sources` module provides functions and classes that are useful for:
 
 - obtaining price quotes for symbols
 - obtaining historical price information for symbols

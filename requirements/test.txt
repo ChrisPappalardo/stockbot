@@ -1,0 +1,6 @@
+# include the base.txt requirements file
+-r base.txt
+
+# additional test requirements
+mock==1.3.0
+wheel==0.23.0
