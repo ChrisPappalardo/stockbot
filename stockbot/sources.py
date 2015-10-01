@@ -276,7 +276,7 @@ def _get_data(symbol,
         for obj in data:
 
             if not isinstance(obj, abc_mm):
-                raise DataError('json data is not a list of dicts')
+                raise DataError('json elements are not dicts')
 
             # replace keys
             obj = dict(map(lambda a, b: (a, obj.get(b, None)),
@@ -326,12 +326,13 @@ def get_yahoo_hist(symbol):
     :raises:`AttributeError`
     '''
 
-    return pd.DataFrame([d for d in _get_data(symbol,
-                                              _YAHOO_HIST['source'],
-                                              _YAHOO_HIST['format'],
-                                              _YAHOO_HIST['tz'],
-                                              _YAHOO_HIST['close'],
-                                              mapping=_YAHOO_HIST['mapping'])])
+    d = dict([(s['datetime'], s) for s in _get_data(symbol,
+                                                    _YAHOO_HIST['source'],
+                                                    _YAHOO_HIST['format'],
+                                                    _YAHOO_HIST['tz'],
+                                                    _YAHOO_HIST['close'],
+                                                    mapping=_YAHOO_HIST['mapping'])])
+    return pd.DataFrame(d).T
 
 
 def get_cnbc_quote(symbol):
