@@ -4,7 +4,7 @@
 test_sources
 ------------
 
-Tests `stockbot.sources` module.
+tests `stockbot.sources` module
 '''
 
 import datetime as dt
