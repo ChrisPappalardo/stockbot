@@ -116,113 +116,49 @@ class DataError(Exception):
         return repr(self.value)
 
 
-def _clean_dt(series,
-              tz=None,
-              close=None):
-    '''
-    Combines 'date' and 'time' fields into 'datetime', converts to
-    `dt.datetime` object, and converts to `pytz.timezone('UTC')`
-
-    :param:`series` the series to check
-    :param:`tz` a `pytz` timezone label
-    :param:`close` market close time
-    :type:`series` `pd.Series` object
-    :type:`tz` `str`
-    :type:`close` `str`
-    :returns:`result` with 'date' and 'time' removed and 'datetime' added
-    :rtype:`pd.Series` Pandas Series object
-    :raises:`ValueError` if `dateutil.parser.parse()` fails
-    :raises:`TypeError` if series is not a `pd.Series` object
-    :raises:`TypeError` if `dt.datetime.combine()` fails
-    :raises:`AttributeError` if `pytz.timezone().localize()` fails
-    '''
-
-    if not isinstance(series, pd.Series):
-        raise TypeError('series is not a pandas Series object')
-
-    if not close:
-        close = dt.datetime.now().time()
-
-    # get date and parse or set to local date
-    date = series.get('date', dt.datetime.today())
-
-    if isinstance(date, str):
-        date = parse(date)
-
-    # get time and parse or set to close
-    time = series.get('time', close)
-
-    if isinstance(time, str):
-        time = parse(time)
-
-    # get datetime or set to date + time; convert from string
-    d_t = series.get('datetime', dt.datetime.combine(date.date(), time.time()))
-
-    if isinstance(d_t, str):
-        d_t = parse(d_t)
-
-    # localize tz and convert to UTC
-    if isinstance(tz, str):
-        d_t = pytz.timezone(tz).localize(d_t)
-
-    elif not tz:
-        d_t.replace(tzinfo=tzlocal())
-
-    d_t = d_t.astimezone(pytz.timezone('UTC'))
-
-    # remove date, time fields and insert datetime field
-    series.drop([f for f in ['date', 'time'] if f in series], inplace=True)
-    series.set_value('datetime', d_t)
-
-    return series
-
-
-def _get_data(symbol,
-              source,
-              format,
+def _get_data(symbol, source, format,
               tz=None,
               close=None,
               pattern=None,
               mapping=None,
               header=True):
     '''
-    Gets price data for :param:`symbol` from :param:`source` and
-    returns a `pd.Series` object with OHLC plus extended data.
+    Gets price data for `:param symbol:` from `:param source` and
+    returns a `MarketData` object with OHLC plus extended data.
 
     Timestamps are in UTC by default.
 
-    :param:`symbol` the ticker symbol of the instrument we want to price
-    :param:`source` the URL source of the data; can be http(s) or file
-    :param:`format` the format of the incoming data, 'csv' 'json' 'raw'
-    :param:`tz` the `pytz.timezone` timezone label of datetime data
-    :param:`close` the default market close associated with :param:`symbol`
-    :param:`pattern` an optional regex pattern to strip from response
-    :param:`mapping` maps data to labels, either positional or associative
-    :param:`header` assume the first line of a multi-line csv is the header
-    :type:`symbol` `str`
-    :type:`source` `str`
-    :type:`format` `str`
-    :type:`tz` `str` (default=None)
-    :type:`close` `str` (default=None)
-    :type:`pattern` `str` (default=None)
-    :type:`mapping` `list` or `dict` (default=None)
-    :type:`header` `bool` (default=True)
-    :returns: a generator that yields price data objects
-    :rtype:`pd.Series`
-    :raises:`IOError` from urlopen if the connection cannot be made
-    :raises:`DataError` if the returned data is blank or the regex fails
-    :raises:`ValueError` if the UTF-8 encoding fails
-    :raises:`ValueError` if the `pd.Series` constructor fails
+    :param symbol: the ticker symbol of the instrument we want to price
+    :param source: the URL source of the data; can be http(s) or file
+    :param format: the format of the incoming data, 'csv' 'json' 'raw'
+    :param tz: the `pytz.timezone` timezone label of datetime data
+    :param close: the default market close associated with `:param symbol:`
+    :param pattern: an optional regex pattern to strip from response
+    :param mapping: maps data to labels, either positional or associative
+    :param header: assume the first line of a multi-line csv is the header
+    :type symbol: `str`
+    :type source: `str`
+    :type format: `str`
+    :type tz: `str` (default=None)
+    :type close: `str` (default=None)
+    :type pattern: `str` (default=None)
+    :type mapping: `list` or `dict` (default=None)
+    :type header: `bool` (default=True)
+    :returns: a generator that yields objects for each timeseries node
+    :rtype: `MarketData`
+    :raises IOError: from urlopen if the connection cannot be made
+    :raises DataError: if the returned data is blank or the regex fails
+    :raises ValueError: if the UTF-8 encoding fails
     :raises:`ValueError` if `json.loads()` fails
     :raises:`AttributeError` if json elements are not `dict` or `list`
 
-    .. warning:: :param:`pattern` and multi-line csv are mutually exclusive
+    .. warning:: `:param pattern:` and multi-line csv are mutually exclusive
 
-    .. warning:: :param:`mapping` must be aligned `list` when :param:`format`
+    .. warning:: `:param mapping:` must be aligned `list` when `:param format:`
                  is 'csv'
 
-    .. warning:: :param:`mapping` must be `dict` of (out, in) keys when
-                 :param:`format` is 'json'
+    .. warning:: `:param mapping:` must be `dict` of (out, in) keys when
+                 `:param format:` is 'json'
 
     .. warning:: 'json' data elements must be `dict` types
 
