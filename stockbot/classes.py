@@ -4,13 +4,13 @@
 classes
 -------
 
-custom `stockbot` classes
+core `stockbot` classes
 '''
 
 ################################################################################
 
 
-import collections
+from collections import MutableMapping
 import datetime as dt
 from decimal import Decimal
 import re
@@ -20,25 +20,25 @@ from dateutil.tz import tzlocal
 import pytz
 
 
-class MarketData(dict):
+class MarketData(MutableMapping):
     '''
-    `dict` subclass for storing market data; processes data based key, content
+    Class composed from `dict` for storing market data.
     '''
-
-    decimal = False
 
     def __init__(self, *args, **kwargs):
         '''
-        strips `MarketData` specific args and calls custom update
+        strips and sets `MarketData` config args and calls update
+        
         :param decimal: turns use of `decimal.Decimal` on/off
         :type decimal: `bool` (default=False)
         '''
 
-        self.decimal = kwargs.pop('decimal', self.decimal)
-        self.update(*args, **kwargs)
+        self.decimal = kwargs.pop('decimal', False)
+        self.dict = dict()
+        self.update(dict(*args, **kwargs))
 
     def __getitem__(self, k):
-        return dict.__getitem__(self, k)
+        return self.dict[k]
 
     def __setitem__(self, k, v):
         '''
@@ -67,19 +67,22 @@ class MarketData(dict):
             else:
                 v = int(v)
 
-        dict.__setitem__(self, k, v)
+        self.dict[k] = v
+
+    def __delitem__(self, k):
+        del self.dict[k]
+
+    def __iter__(self):
+        return iter(self.dict)
+
+    def __len__(self):
+        return len(self.dict)
+
+    def __str__(self):
+        return str(self.dict)
 
     def __repr__(self):
-        dict_repr = dict.__repr__(self)
-        return '%s(%s)' % (type(self).__name__, dict_repr)
-
-    def update(self, *args, **kwargs):
-        '''
-        implements update by calling `dict.iteritems()`
-        '''
-
-        for k, v in dict(*args, **kwargs).iteritems():
-            self[k] = v
+        return repr(self.dict)
 
     def clean_dt(self, tz=None, close=None):
         '''
@@ -100,22 +103,23 @@ class MarketData(dict):
             tz = pytz.timezone(tz)
 
         # set tz to America/New_York by default
-        elif not tz:
+        elif tz is None:
             tz = pytz.timezone('America/New_York')
 
         # set close to now() in tz by default
-        if not close:
+        if close is None:
             close = dt.datetime.now().replace(tzinfo=tzlocal()).astimezone(tz)
 
         # get date or default to today() in tz
         default = dt.datetime.today().replace(tzinfo=tzlocal()).astimezone(tz)
-        date = self.get('date', default)
+        date = self.dict.get('date', default)
 
         # get time or default to close
-        time = self.get('time', close)
+        time = self.dict.get('time', close)
 
         # get datetime or set to date + time
-        d_t = self.get('datetime', dt.datetime.combine(date.date(), time.time()))
+        d_t = self.dict.get('datetime',
+                            dt.datetime.combine(date.date(), time.time()))
 
         # localize datetime to tz if naive and convert to UTC
         if not d_t.tzinfo:
@@ -125,9 +129,9 @@ class MarketData(dict):
 
         # remove date, time fields
         for k in ['date', 'time']:
-            self.pop(k, None)
+            self.dict.pop(k, None)
 
         # add datetime field
-        self.setdefault('datetime', d_t)
+        self.dict.setdefault('datetime', d_t)
 
         return self

@@ -43,7 +43,7 @@ class TestMarketData(unittest.TestCase):
             'open': 191.78,
             'change': -4.84,
         }
-        assert(a == b)
+        self.assertEqual(a, b)
 
     def test_MarketData_decimal(self):
         a = MarketData(self.data_in, decimal=True)
@@ -58,7 +58,7 @@ class TestMarketData(unittest.TestCase):
             'open': Decimal('191.78'),
             'change': Decimal('-4.84'),
         }
-        assert(a == b)
+        self.assertEqual(a, b)
 
     def test_MarketData_clean_dt(self):
         a = MarketData(self.data_in).clean_dt()
@@ -72,7 +72,7 @@ class TestMarketData(unittest.TestCase):
             'change': -4.84,
             'datetime': dt.datetime(2015, 9, 28, 20, 23, tzinfo=pytz.timezone('UTC'))
         }
-        assert(a == b)
+        self.assertEqual(a, b)
 
     def tearDown(self):
         pass

@@ -12,7 +12,6 @@ from StringIO import StringIO
 import unittest
 
 from mock import (patch, Mock)
-import pandas as pd
 import pytz
 
 from stockbot.sources import (get_yahoo_quote,
@@ -39,30 +38,23 @@ class TestSources(unittest.TestCase):
         a.readlines.side_effect = [StringIO(_in).readlines()]
         mock_urlopen.return_value = a
         b = get_yahoo_quote('')
-        c = pd.Series(out_values, index=out_labels)
-        assert(b.equals(c))
+        c = dict(zip(out_labels, out_values))
+        self.assertEqual(b, c)
 
     @patch('stockbot.sources.urlopen')
     def test_get_yahoo_hist(self, mock_urlopen):
         _in = u'Date,Open,High,Low,Close,Volume,Adj Close\n2015-09-30,190.369995,191.830002,189.440002,191.589996,152593200,191.589996\n'
         out_labels = ['open', 'high', 'low', 'close', 'volume', 'last', 'datetime']
-        out_values = {
-            dt.datetime(2015, 9, 30, 20, 00, tzinfo=pytz.timezone('UTC')): pd.Series({
-                'open': '190.369995',
-                'high': '191.830002',
-                'low': '189.440002',
-                'close': '191.589996',
-                'volume': '152593200',
-                'last': '191.589996',
-                'datetime': dt.datetime(2015, 9, 30, 20, 00, tzinfo=pytz.timezone('UTC'))
-            })
-        }
+        out_values = [
+            '190.369995', '191.830002', '189.440002', '191.589996', '152593200', '191.589996',
+            dt.datetime(2015, 9, 30, 20, 00, tzinfo=pytz.timezone('UTC'))
+        ]
         a = Mock()
         a.readlines.side_effect = [StringIO(_in).readlines()]
         mock_urlopen.return_value = a
-        b = get_yahoo_hist('')
-        c = pd.DataFrame(out_values, index=out_labels).T
-        assert(b.equals(c))
+        b = next(get_yahoo_hist(''))
+        c = dict(zip(out_labels, out_values))
+        self.assertEqual(b, c)
         '''
     @patch('stockbot.sources.urlopen')
     def test_get_cnbc_quote(self, mock_urlopen):

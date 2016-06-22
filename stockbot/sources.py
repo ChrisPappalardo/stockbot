@@ -14,24 +14,24 @@ The `sources` module provides functions and classes that are useful for:
 ###############################################################################
 
 
-from collections import MutableSequence as abc_ms
-from collections import MutableMapping as abc_mm
 import csv
 import datetime as dt
 import json
 import re
+import sys
 
 from dateutil.parser import parse
 from dateutil.tz import tzlocal
-import pandas as pd
 import pytz
 
-if pd.compat.PY3:
+if sys.version_info > (3, 0):
     from urllib.parse import quote_plus
     from urllib.request import urlopen
 else:
     from urllib import quote_plus
     from urllib2 import urlopen
+
+from classes import MarketData
 
 
 _YAHOO_QUOTE = {
@@ -113,7 +113,7 @@ class DataError(Exception):
         self.value = value
 
     def __str__(self):
-        return repr(self.value)
+        return str(self.value)
 
 
 def _get_data(symbol, source, format,
@@ -188,7 +188,7 @@ def _get_data(symbol, source, format,
         if not data:
             raise DataError('regex on data failed to produce a result')
 
-    # csv format: yield each line as a pd.Series object with clean dt
+    # csv format: yield each line as a MarketData object with clean dt
     if format == 'csv':
 
         # if header, assume first line of multi-line list is the header
@@ -200,9 +200,9 @@ def _get_data(symbol, source, format,
             if len(row) != len(mapping):
                 raise DataError('csv row length does not match mapping')
 
-            yield pd.Series(row, index=mapping).pipe(_clean_dt, tz, close)
+            yield MarketData(dict(zip(mapping, row))).clean_dt(tz, close)
 
-    # json format: yield each element as a pd.Series object with clean dt
+    # json format: yield each element as a MarketData object with clean dt
     elif format == 'json':
 
         # decode json data; force top-level to list
@@ -218,7 +218,7 @@ def _get_data(symbol, source, format,
             obj = dict(map(lambda a, b: (a, obj.get(b, None)),
                            mapping.items()))
 
-            yield pd.Series(obj).pipe(_clean_dt, tz, close)
+            yield MarketData(obj).clean_dt(tz, close)
 
     # raw format: yield the raw result
     elif format == 'raw':
@@ -232,7 +232,7 @@ def get_yahoo_quote(symbol):
 
     :param:`symbol` the ticker symbol of the instrument we want to price
     :type:`symbol` `str`
-    :returns: labeled price data
+    :returns: `MarketData` object with labeled price data
     :rtype:`pd.Series`
     :raises:`IOError`
     :raises:`DataError`
@@ -240,12 +240,13 @@ def get_yahoo_quote(symbol):
     :raises:`AttributeError`
     '''
 
-    return next(_get_data(symbol,
-                          _YAHOO_QUOTE['source'],
-                          _YAHOO_QUOTE['format'],
-                          _YAHOO_QUOTE['tz'],
-                          _YAHOO_QUOTE['close'],
-                          mapping=_YAHOO_QUOTE['mapping']))
+    return next(_get_data(
+        symbol,
+        _YAHOO_QUOTE['source'],
+        _YAHOO_QUOTE['format'],
+        _YAHOO_QUOTE['tz'],
+        _YAHOO_QUOTE['close'],
+        mapping=_YAHOO_QUOTE['mapping']))
 
 
 def get_yahoo_hist(symbol):
@@ -254,7 +255,7 @@ def get_yahoo_hist(symbol):
 
     :param:`symbol` the ticker symbol of the instrument we want to price
     :type:`symbol` `str`
-    :returns: a time series of labeled price data
+    :returns: a `MarketData` obj generator of labeled price data
     :rtype:`pd.DataFrame`
     :raises:`IOError`
     :raises:`DataError`
@@ -262,13 +263,15 @@ def get_yahoo_hist(symbol):
     :raises:`AttributeError`
     '''
 
-    d = dict([(s['datetime'], s) for s in _get_data(symbol,
-                                                    _YAHOO_HIST['source'],
-                                                    _YAHOO_HIST['format'],
-                                                    _YAHOO_HIST['tz'],
-                                                    _YAHOO_HIST['close'],
-                                                    mapping=_YAHOO_HIST['mapping'])])
-    return pd.DataFrame(d).T
+    return _get_data(
+        symbol,
+        _YAHOO_HIST['source'],
+        _YAHOO_HIST['format'],
+        _YAHOO_HIST['tz'],
+        _YAHOO_HIST['close'],
+        mapping=_YAHOO_HIST['mapping'])
+
+#    return pd.DataFrame(d).T
 
 
 def get_cnbc_quote(symbol):
@@ -277,7 +280,7 @@ def get_cnbc_quote(symbol):
 
     :param:`symbol` the ticker symbol of the instrument we want to price
     :type:`symbol` `str`
-    :returns: labeled price data
+    :returns: `MarketData` object with labeled price data
     :rtype:`pd.Series`
     :raises:`IOError`
     :raises:`DataError`
@@ -285,12 +288,13 @@ def get_cnbc_quote(symbol):
     :raises:`AttributeError`
     '''
 
-    return _get_data(symbol,
-                     _CNBC_QUOTE['source'],
-                     _CNBC_QUOTE['format'],
-                     _CNBC_QUOTE['tz'],
-                     _CNBC_QUOTE['close'],
-                     mapping=_CNBC_QUOTE['mapping'])
+    return _get_data(
+        symbol,
+        _CNBC_QUOTE['source'],
+        _CNBC_QUOTE['format'],
+        _CNBC_QUOTE['tz'],
+        _CNBC_QUOTE['close'],
+        mapping=_CNBC_QUOTE['mapping'])
 
 
 def get_symbol(symbol):
@@ -299,7 +303,7 @@ def get_symbol(symbol):
 
     :param:`symbol` the symbol or name fragment to find
     :type:`search` `str`
-    :returns: a list of matches
+    :returns: a `MarketData` obj generator of results
     :rtype: `list`
     :raises:`IOError`
     :raises:`DataError`
@@ -307,10 +311,11 @@ def get_symbol(symbol):
     :raises:`AttributeError`
     '''
 
-    return [r for r in _get_data(symbol,
-                                 _YAHOO_SEARCH['source'],
-                                 _YAHOO_SEARCH['format'],
-                                 _YAHOO_SEARCH['mapping'])]
+    return _get_data(
+        symbol,
+        _YAHOO_SEARCH['source'],
+        _YAHOO_SEARCH['format'],
+        _YAHOO_SEARCH['mapping'])
 
 
 def get_status_US():
@@ -325,7 +330,8 @@ def get_status_US():
     :raises:`AttributeError`
     '''
 
-    return next(_get_data('',
-                          _YAHOO_STATUS_US['source'],
-                          _YAHOO_STATUS_US['format'],
-                          pattern=_YAHOO_STATUS_US['pattern']))
+    return next(_get_data(
+        '',
+        _YAHOO_STATUS_US['source'],
+        _YAHOO_STATUS_US['format'],
+        pattern=_YAHOO_STATUS_US['pattern']))
