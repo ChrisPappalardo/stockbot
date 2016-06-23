@@ -19,17 +19,16 @@ import datetime as dt
 import json
 import re
 import sys
-
-from dateutil.parser import parse
-from dateutil.tz import tzlocal
-import pytz
-
 if sys.version_info > (3, 0):
     from urllib.parse import quote_plus
     from urllib.request import urlopen
 else:
     from urllib import quote_plus
     from urllib2 import urlopen
+
+from dateutil.parser import parse
+from dateutil.tz import tzlocal
+import pytz
 
 from classes import MarketData
 
@@ -40,7 +39,7 @@ _YAHOO_QUOTE = {
         u'quotes.csv?s=%s&f=sl1d1t1c1ohgv&e=.csv'),
     'format': 'csv',
     'tz': 'America/New_York',
-    'close': '4:00pm',
+    'close': parse('4:00pm'),
     'mapping': ['symbol', 'last', 'date', 'time', 'change', 'open', 'high',
                 'low', 'volume'],
     }
@@ -52,7 +51,7 @@ _YAHOO_HIST = {
         u'table.csv?s=%s&d=11&e=31&f=9999&g=d&a=0&b=1&c=1900&ignore=.csv'),
     'format': 'csv',
     'tz': 'America/New_York',
-    'close': '4:00pm',
+    'close': parse('4:00pm'),
     'mapping': ['date', 'open', 'high', 'low', 'close', 'volume', 'last'],
     }
 
@@ -61,7 +60,7 @@ _CNBC_QUOTE = {
     'source': u'http://data.cnbc.com/quotes/%s',
     'format': 'json',
     'tz': 'America/New_York',
-    'close': '4:00pm',
+    'close': parse('4:00pm'),
     'pattern': u'var quoteDataObj = \[({.*?})\]',
     'mapping': {
         'symbol': 'symbol',

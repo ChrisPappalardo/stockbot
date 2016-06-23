@@ -28,7 +28,7 @@ class MarketData(MutableMapping):
     def __init__(self, *args, **kwargs):
         '''
         strips and sets `MarketData` config args and calls update
-        
+
         :param decimal: turns use of `decimal.Decimal` on/off
         :type decimal: `bool` (default=False)
         '''

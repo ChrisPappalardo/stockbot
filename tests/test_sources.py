@@ -8,8 +8,12 @@ tests `stockbot.sources` module
 '''
 
 import datetime as dt
-from StringIO import StringIO
+import sys
 import unittest
+if sys.version_info > (3, 0):
+    from io import StringIO
+else:
+    from StringIO import StringIO
 
 from mock import (patch, Mock)
 import pytz
@@ -31,7 +35,7 @@ class TestSources(unittest.TestCase):
         _in = u'"SPY",188.01,"9/28/2015","4:23pm",-4.84,191.78,191.91,187.64,178515871\n'
         out_labels = ['symbol', 'last', 'change', 'open', 'high', 'low', 'volume', 'datetime']
         out_values = [
-            'SPY', '188.01', '-4.84', '191.78', '191.91', '187.64', '178515871',
+            'SPY', 188.01, -4.84, 191.78, 191.91, 187.64, 178515871,
             dt.datetime(2015, 9, 28, 20, 23, 00, tzinfo=pytz.timezone('UTC'))
         ]
         a = Mock()
@@ -46,7 +50,7 @@ class TestSources(unittest.TestCase):
         _in = u'Date,Open,High,Low,Close,Volume,Adj Close\n2015-09-30,190.369995,191.830002,189.440002,191.589996,152593200,191.589996\n'
         out_labels = ['open', 'high', 'low', 'close', 'volume', 'last', 'datetime']
         out_values = [
-            '190.369995', '191.830002', '189.440002', '191.589996', '152593200', '191.589996',
+            190.369995, 191.830002, 189.440002, 191.589996, 152593200, 191.589996,
             dt.datetime(2015, 9, 30, 20, 00, tzinfo=pytz.timezone('UTC'))
         ]
         a = Mock()
