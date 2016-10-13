@@ -1,4 +1,4 @@
-.PHONY: clean-pyc clean-build docs clean
+.PHONY: clean-pyc clean-build clean-test clean-docker docs clean
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
 try:
@@ -16,6 +16,7 @@ help:
 	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "clean-test - remove test and coverage artifacts"
+	@echo "clean-docker - remove all docker containers and images"
 	@echo "lint - check style with flake8"
 	@echo "test - run tests quickly with the default Python"
 	@echo "test-all - run tests on every Python version with tox"
@@ -44,6 +45,10 @@ clean-test:
 	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
+
+clean-docker:
+	-docker ps --all --quiet | xargs docker rm --force 2>/dev/null || true
+	-docker images --quiet | xargs docker rmi --force 2>/dev/null || true
 
 lint:
 	flake8 stockbot tests

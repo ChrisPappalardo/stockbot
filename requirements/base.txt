@@ -1,3 +1,4 @@
 # base requirements for all environments
 python-dateutil>=2.4.2
 pytz>=2015.6
+zipline>=1.0.2
