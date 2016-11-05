@@ -22,5 +22,5 @@ before_install:
 # command to run tests, e.g. python setup.py test
 #script: python setup.py test
 script:
-  - travis_wait 30 docker-compose -f docker-compose-test.yml run --rm stockbot tox -e py27
-  - travis_wait 30 docker-compose -f docker-compose-test.yml run --rm stockbot tox -e py34
+  - travis_wait 40 docker-compose -f docker-compose-test.yml run --rm stockbot tox -e py27
+  - travis_wait 40 docker-compose -f docker-compose-test.yml run --rm stockbot tox -e py34
