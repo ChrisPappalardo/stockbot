@@ -31,6 +31,10 @@ class TestMarketData(unittest.TestCase):
                         'volume': '178515871'}
 
     def test_MarketData(self):
+        '''
+        MarketData ingests and converts data as expected
+        '''
+
         a = MarketData(self.data_in)
         b = {
             'high': 191.91,
@@ -46,6 +50,10 @@ class TestMarketData(unittest.TestCase):
         self.assertEqual(a, b)
 
     def test_MarketData_decimal(self):
+        '''
+        MarketData produces correct decimals
+        '''
+
         a = MarketData(self.data_in, decimal=True)
         b = {
             'high': Decimal('191.91'),
@@ -61,6 +69,10 @@ class TestMarketData(unittest.TestCase):
         self.assertEqual(a, b)
 
     def test_MarketData_clean_dt(self):
+        '''
+        MarketData correctly converts timezones to UTC
+        '''
+
         a = MarketData(self.data_in).clean_dt()
         b = {
             'high': 191.91,

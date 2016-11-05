@@ -11,29 +11,71 @@ import unittest
 
 import pandas as pd
 from numpy import isnan
-from talib import abstract
+from talib.abstract import (
+    TRANGE,
+    PLUS_DI,
+    MINUS_DI,
+    ADX,
+)
+
+from core import remap
 
 
-OHLC_fields_talib = ['open', 'high', 'low', 'close']
-OHLC_fields_adxdata = ['open', 'high', 'low', 'last']
-tol_ADX_low = -1.0
-tol_ADX_high = 1.0
-
-
-class TestADX(unittest.TestCase):
+class TestTAlib(unittest.TestCase):
 
     def setUp(self):
-        self.data = pd.read_csv('tests/data/adx.csv')
+        self.adxdata = pd.read_csv('tests/data/adx.csv')
+
+    def test_TR(self):
+        '''
+        talib TR and test TR differences are NaN or within tolerances
+        '''
+
+        field_map = {
+            'last': 'close',
+        }
+        input = remap(field_map, self.adxdata)
+
+        calc = pd.Series(TRANGE(input))
+        diff = calc - input['tr1']
+        test = lambda x: isnan(x) | (x >= -1.0 and x <= 1.0)
+        self.assertTrue(all(test(x) for x in diff))
+
+    def test_DI(self):
+        '''
+        talib DI and test DI differences are NaN or within tolerances
+        '''
+
+        field_map = {
+            'last': 'close',
+        }
+        input = remap(field_map, self.adxdata)
+
+        fcn_map = {
+            'pdi': PLUS_DI,
+            'mdi': MINUS_DI,
+        }
+
+        for (k, f) in fcn_map.items():
+            calc = pd.Series(f(input))
+            diff = calc - input[k]
+            test = lambda x: isnan(x) | (x >= -1.0 and x <= 1.0)
+            self.assertTrue(all(test(x) for x in diff))
 
     def test_ADX(self):
-        talib_inpt = dict(zip(OHLC_fields_talib,
-                              [self.data[f] for f in OHLC_fields_adxdata]))
-        talib_calc = pd.Series(abstract.ADX(talib_inpt))
-        talib_diff = talib_calc - self.data['adx']
-        talib_test = lambda x: isnan(x) | (x >= tol_ADX_low and x <= tol_ADX_high)
+        '''
+        talib ADX and test ADX differences are NaN or within tolerances
+        '''
 
-        # every diff between talib ADX and test ADX is NaN or within tolerances
-        self.assertTrue(all(talib_test(x) for x in talib_diff))
+        field_map = {
+            'last': 'close',
+        }
+        input = remap(field_map, self.adxdata)
+
+        calc = pd.Series(ADX(input))
+        diff = calc - input['adx']
+        test = lambda x: isnan(x) | (x >= -1.0 and x <= 1.0)
+        self.assertTrue(all(test(x) for x in diff))
 
     def tearDown(self):
         pass
