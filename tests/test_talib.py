@@ -18,7 +18,7 @@ from talib.abstract import (
     ADX,
 )
 
-from core import remap
+from tests.core import remap
 
 
 class TestTAlib(unittest.TestCase):
