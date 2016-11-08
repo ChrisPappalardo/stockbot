@@ -10,7 +10,7 @@ core `stockbot` objects and functions
 ################################################################################
 
 
-import requests
+from requests import get
 from bs4 import BeautifulSoup
 
 
@@ -22,7 +22,7 @@ def get_sp500_list(symbols_only=True):
     result = list()
 
     url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
-    page = requests.get(url)
+    page = get(url)
     soup = BeautifulSoup(page.content, 'html.parser')
     rows = soup.find('table').findAll('tr')
     keys = [k.text for k in rows[0].findAll('th')]

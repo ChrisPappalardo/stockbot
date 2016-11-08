@@ -15,10 +15,10 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read().replace('.. :changelog:', '')
 
 requirements = [
-    'numpy',
-    'pandas',
+    'beautifulsoup4',
     'python-dateutil',
     'pytz',
+    'requests',
     'TA-lib',
     'zipline',
 ]

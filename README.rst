@@ -26,7 +26,7 @@ Installation
 
 You must first build the `quantopian/zipline` Docker image with the following command::
 
-  $ docker build -t quantopian/zipline https://github.com/quantopian/zipline.git
+  $ docker build -t quantopian/zipline https://github.com/quantopian/zipline.git#1.0.2
 
 To create the stockbot Docker development container, simply run the following::
 
