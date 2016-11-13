@@ -16,6 +16,8 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'beautifulsoup4',
+    'numpy',
+    'pandas',
     'python-dateutil',
     'pytz',
     'requests',
