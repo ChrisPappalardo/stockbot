@@ -10,13 +10,14 @@ directional movement indicator system for top ADX stocks
 ################################################################################
 
 
+import logbook
+from talib.abstract import ADX
 from zipline.api import (
     order_target,
     record,
     symbol,
 )
 from zipline.errors import SymbolNotFound
-import logbook
 
 from stockbot.core import get_sp500_list
 
@@ -25,9 +26,11 @@ def initialize(context):
     # reset iteration cursor
     context.i = 0
 
-    # set stock population and TI window
+    # set stock population, TI window, rank levels
     context.sym = list()
     context.window = 14
+    context.top_rank = 5
+    context.bot_rank = 5
 
     for s in get_sp500_list():
         try:
@@ -37,7 +40,8 @@ def initialize(context):
 
     # create stockbot log and add config line
     context.log = logbook.Logger('Stockbot')
-    context.log.info('Stock universe contains %s stocks' % len(context.sym))
+    m = 'Stockbot ADX/DI program initialized with %s stocks'
+    context.log.info(m % len(context.sym))
 
 
 def handle_data(context, data):
@@ -47,13 +51,22 @@ def handle_data(context, data):
         return
 
     # calculate ADX for all stocks
+    adx = dict()
     for s in context.sym:
         input = {
-            'high': data.history(s, 'high', context.window, '1d'),
-            'low': data.history(s, 'low', context.window, '1d'),
-            'close': data.history(s, 'close', context.window, '1d'),
+            'high': data.history(s, 'high', context.window * 2, '1d'),
+            'low': data.history(s, 'low', context.window * 2, '1d'),
+            'close': data.history(s, 'close', context.window * 2, '1d'),
         }
-        ADX(input)
+        try:
+            adx[s.symbol] = ADX(input)[-1]
+        except Exception as e:
+            if 'inputs are all NaN' not in e: raise
+
+    # store top and bottom ranks
+    key = lambda t: t[1]
+    adx_sort = sorted(adx.items(), key=key, reverse=True)
+    context.log.info('%s %s' % (adx_sort[:5], adx_sort[-5:]))
 
     # Compute averages
     # history() has to be called with the same params
