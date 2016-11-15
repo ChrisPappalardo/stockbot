@@ -28,9 +28,12 @@ else:
 
 from dateutil.parser import parse
 from dateutil.tz import tzlocal
+from pandas.tslib import Timestamp
 import pytz
+from zipline.data.data_portal import DataPortal
+from zipline.utils.calendars import get_calendar
 
-from classes import MarketData
+from .classes import MarketData
 
 
 _YAHOO_QUOTE = {
@@ -334,3 +337,52 @@ def get_status_US():
         _YAHOO_STATUS_US['source'],
         _YAHOO_STATUS_US['format'],
         pattern=_YAHOO_STATUS_US['pattern']))
+
+
+def get_zipline_hist(bundle,
+                     symbol,
+                     end_dt,
+                     bar_count,
+                     field,
+                     frequency='1d',
+                     cal='NYSE'):
+    '''
+    Gets historical price data for :param:`symbol` from a zipline bundle.
+
+    :param:`bundle` a data object
+    :type:`bundle` `zipline.data.bundles.core.BundleData`
+    :param:`symbol` the ticker symbol of the instrument
+    :type:`symbol` `str`
+    :param:`end_dt` the ending datetime of the series
+    :type:`end_dt` `dt.datetime`
+    :param:`bar_count` the number of points in the timeseries
+    :type:`bar_count` `int`
+    :param:`field` the desired OHLC field
+    :type:`field` `str`
+    :param:`frequency` the frequency of the timeseries (e.g. "1d" or "1m")
+    :type:`frequency` `str`
+    :param:`cal` the market calendar name to use (e.g. "NYSE")
+    :type:`cal` `str`
+    :returns:`pandas.DataFrame`
+    :rtype:`pandas.DataFrame`
+    :raises:`IOError`
+    :raises:`DataError`
+    :raises:`ValueError`
+    :raises:`AttributeError`
+    '''
+
+    dp = DataPortal(
+        bundle.asset_finder,
+        get_calendar(cal),
+        first_trading_day=bundle.equity_minute_bar_reader.first_trading_day,
+        equity_minute_reader=bundle.equity_minute_bar_reader,
+        equity_daily_reader=bundle.equity_daily_bar_reader,
+        adjustment_reader=bundle.adjustment_reader,
+    )
+    return dp.get_history_window(
+        [dp.asset_finder.lookup_symbol(symbol, None)],
+        Timestamp(end_dt),
+        bar_count,
+        frequency,
+        field,
+    )
