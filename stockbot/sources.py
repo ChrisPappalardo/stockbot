@@ -45,7 +45,7 @@ _YAHOO_QUOTE = {
     'close': parse('4:00pm'),
     'mapping': ['symbol', 'last', 'date', 'time', 'change', 'open', 'high',
                 'low', 'volume'],
-    }
+}
 
 
 _YAHOO_HIST = {
@@ -56,7 +56,7 @@ _YAHOO_HIST = {
     'tz': 'America/New_York',
     'close': parse('4:00pm'),
     'mapping': ['date', 'open', 'high', 'low', 'close', 'volume', 'last'],
-    }
+}
 
 
 _CNBC_QUOTE = {
@@ -72,8 +72,9 @@ _CNBC_QUOTE = {
         'open': 'open',
         'high': 'high',
         'low': 'low',
-        'volume': 'volume'}
+        'volume': 'volume'
     }
+}
 
 
 _YAHOO_SEARCH = {
@@ -90,14 +91,20 @@ _YAHOO_SEARCH = {
         'name': 'name',
         'exchange': 'exch',
         'type': 'typeDisp'}
-    }
+}
 
 
 _YAHOO_STATUS_US = {
     'source': u'http://finance.yahoo.com',
     'format': 'raw',
     'pattern': u'U\.S\. Markets close in ',
-    }
+}
+
+
+_ZIPLINE_QUANDL_BUNDLE = {
+    'name': 'quantopian-quandl',
+    'cal': 'NYSE',
+}
 
 
 class DataError(Exception):
@@ -341,24 +348,24 @@ def get_status_US():
 
 def get_zipline_hist(bundle,
                      symbol,
-                     end_dt,
-                     bar_count,
                      field,
+                     end_dt,
+                     bar_count=1,
                      frequency='1d',
                      cal='NYSE'):
     '''
-    Gets historical price data for :param:`symbol` from a zipline bundle.
+    Gets daily historical price data for :param:`symbol` from a zipline bundle.
 
     :param:`bundle` a data object
     :type:`bundle` `zipline.data.bundles.core.BundleData`
     :param:`symbol` the ticker symbol of the instrument
     :type:`symbol` `str`
+    :param:`field` the desired OHLC field
+    :type:`field` `str`
     :param:`end_dt` the ending datetime of the series
     :type:`end_dt` `dt.datetime`
     :param:`bar_count` the number of points in the timeseries
     :type:`bar_count` `int`
-    :param:`field` the desired OHLC field
-    :type:`field` `str`
     :param:`frequency` the frequency of the timeseries (e.g. "1d" or "1m")
     :type:`frequency` `str`
     :param:`cal` the market calendar name to use (e.g. "NYSE")
@@ -369,6 +376,22 @@ def get_zipline_hist(bundle,
     :raises:`DataError`
     :raises:`ValueError`
     :raises:`AttributeError`
+
+    Snap a date to the calender with::
+
+         get_calendar(cal).all_sessions.asof(Timestamp(end_dt))
+
+    Get the last traded datetime for a symbol and calendar dt with::
+
+         dp.get_last_traded_dt(
+             dp.asset_finder.lookup_symbol(symbol, None),
+             get_calendar(cal).all_sessions.asof(Timestamp(end_dt)),
+             'daily',
+         )
+
+    Get the session index with::
+
+         get_calendar(cal).all_sessions.searchsorted(Timestamp(end_dt))
     '''
 
     dp = DataPortal(
@@ -385,4 +408,4 @@ def get_zipline_hist(bundle,
         bar_count,
         frequency,
         field,
-    )
+    ).iloc[:,0]

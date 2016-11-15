@@ -25,7 +25,7 @@ COPY ./requirements /requirements
 RUN pip install -r /requirements/dev.txt
 
 # stage the entrypoint
-COPY ./compose/stockbot/entrypoint.sh /entrypoint.sh
+COPY ./compose/stockbot/entrypoint-dev.sh /entrypoint.sh
 RUN sed -i 's/\r//' /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
