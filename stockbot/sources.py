@@ -30,10 +30,11 @@ from dateutil.parser import parse
 from dateutil.tz import tzlocal
 from pandas.tslib import Timestamp
 import pytz
+from zipline.data.bundles.core import load
 from zipline.data.data_portal import DataPortal
 from zipline.utils.calendars import get_calendar
 
-from .classes import MarketData
+from .marketdata import MarketData
 
 
 _YAHOO_QUOTE = {
@@ -346,18 +347,36 @@ def get_status_US():
         pattern=_YAHOO_STATUS_US['pattern']))
 
 
-def get_zipline_hist(bundle,
-                     symbol,
+def get_zipline_dp(bundle=None, calendar=None):
+    '''
+    Creates and returns a zipline data portal, used for symbol lookups and data
+
+    `bundle` is a `zipline`BundleData` object (optional)
+    `calendar` is a `zipline`ExchangeCalendar` object (optional)
+    '''
+
+    if bundle is None: bundle = load(_ZIPLINE_QUANDL_BUNDLE['name'])
+    if calendar is None: calendar = get_calendar(_ZIPLINE_QUANDL_BUNDLE['cal'])
+    print type(calendar)
+    return DataPortal(
+        bundle.asset_finder,
+        calendar,
+        first_trading_day=bundle.equity_minute_bar_reader.first_trading_day,
+        equity_minute_reader=bundle.equity_minute_bar_reader,
+        equity_daily_reader=bundle.equity_daily_bar_reader,
+        adjustment_reader=bundle.adjustment_reader,
+    )
+
+def get_zipline_hist(symbol,
                      field,
                      end_dt,
                      bar_count=1,
                      frequency='1d',
-                     cal='NYSE'):
+                     bundle=None,
+                     calendar=None):
     '''
     Gets daily historical price data for :param:`symbol` from a zipline bundle.
 
-    :param:`bundle` a data object
-    :type:`bundle` `zipline.data.bundles.core.BundleData`
     :param:`symbol` the ticker symbol of the instrument
     :type:`symbol` `str`
     :param:`field` the desired OHLC field
@@ -368,8 +387,10 @@ def get_zipline_hist(bundle,
     :type:`bar_count` `int`
     :param:`frequency` the frequency of the timeseries (e.g. "1d" or "1m")
     :type:`frequency` `str`
-    :param:`cal` the market calendar name to use (e.g. "NYSE")
-    :type:`cal` `str`
+    :param:`bundle` a `zipline`ExchangeCalendar` object
+    :type:`bundle` `zipline.data.bundles.core.BundleData`
+    :param:`calendar` a `zipline` `BundleData` object
+    :type:`calendar` `str`
     :returns:`pandas.DataFrame`
     :rtype:`pandas.DataFrame`
     :raises:`IOError`
@@ -394,14 +415,8 @@ def get_zipline_hist(bundle,
          get_calendar(cal).all_sessions.searchsorted(Timestamp(end_dt))
     '''
 
-    dp = DataPortal(
-        bundle.asset_finder,
-        get_calendar(cal),
-        first_trading_day=bundle.equity_minute_bar_reader.first_trading_day,
-        equity_minute_reader=bundle.equity_minute_bar_reader,
-        equity_daily_reader=bundle.equity_daily_bar_reader,
-        adjustment_reader=bundle.adjustment_reader,
-    )
+    dp = get_zipline_dp(bundle, calendar)
+
     return dp.get_history_window(
         [dp.asset_finder.lookup_symbol(symbol, None)],
         Timestamp(end_dt),

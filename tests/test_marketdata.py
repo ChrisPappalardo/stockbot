@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 '''
-test_classes
-------------
+test_marketdata
+---------------
 
-tests `stockbot.classes` module
+tests `stockbot.marketdata` module
 '''
 
 import datetime as dt
@@ -14,7 +14,7 @@ import unittest
 from dateutil.tz import tzlocal
 import pytz
 
-from stockbot.classes import (MarketData)
+from stockbot.marketdata import MarketData
 
 
 class TestMarketData(unittest.TestCase):
