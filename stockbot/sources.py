@@ -30,6 +30,7 @@ from dateutil.parser import parse
 from dateutil.tz import tzlocal
 from pandas.tslib import Timestamp
 import pytz
+from zipline.assets._assets import Equity
 from zipline.data.bundles.core import load
 from zipline.data.data_portal import DataPortal
 from zipline.utils.calendars import get_calendar
@@ -357,7 +358,7 @@ def get_zipline_dp(bundle=None, calendar=None):
 
     if bundle is None: bundle = load(_ZIPLINE_QUANDL_BUNDLE['name'])
     if calendar is None: calendar = get_calendar(_ZIPLINE_QUANDL_BUNDLE['cal'])
-    print type(calendar)
+
     return DataPortal(
         bundle.asset_finder,
         calendar,
@@ -373,7 +374,8 @@ def get_zipline_hist(symbol,
                      bar_count=1,
                      frequency='1d',
                      bundle=None,
-                     calendar=None):
+                     calendar=None,
+                     dp=None):
     '''
     Gets daily historical price data for :param:`symbol` from a zipline bundle.
 
@@ -415,10 +417,12 @@ def get_zipline_hist(symbol,
          get_calendar(cal).all_sessions.searchsorted(Timestamp(end_dt))
     '''
 
-    dp = get_zipline_dp(bundle, calendar)
+    dp = get_zipline_dp(bundle, calendar) if dp is None else dp
+    if type(symbol) is not Equity:
+        symbol = dp.asset_finder.lookup_symbol(symbol, None)
 
     return dp.get_history_window(
-        [dp.asset_finder.lookup_symbol(symbol, None)],
+        [symbol],
         Timestamp(end_dt),
         bar_count,
         frequency,
