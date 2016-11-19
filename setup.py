@@ -21,6 +21,7 @@ requirements = [
     'pandas',
     'python-dateutil',
     'pytz',
+    'six',
     'requests',
     'TA-lib',
     'zipline',

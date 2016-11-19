@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 '''
-classes
--------
+marketdata
+----------
 
-core `stockbot` classes
+MarketData class for storing and converting OHLC data
 '''
 
 ################################################################################
@@ -23,12 +23,12 @@ from six import string_types
 
 class MarketData(MutableMapping):
     '''
-    Class composed from `dict` for storing market data.
+    class for storing and converting market data.
     '''
 
     def __init__(self, *args, **kwargs):
         '''
-        strips and sets `MarketData` config args and calls update
+        strips and sets config args and calls update
 
         :param decimal: turns use of `decimal.Decimal` on/off
         :type decimal: `bool` (default=False)
@@ -46,8 +46,6 @@ class MarketData(MutableMapping):
         custom `__setitem__` converts date, time, datetime `str` to
         `dt.datetime` objects and all value fields that appear to be
         numerics to `int`, `float`, or `Decimal`
-
-        :raises InvalidOperation: on bad decimal conversion
         '''
 
         # parse date, time, datetime value strings to dt objects
@@ -87,16 +85,15 @@ class MarketData(MutableMapping):
 
     def clean_dt(self, tz=None, close=None):
         '''
-        Combines 'date' and/or 'time' fields into 'datetime' and converts
-        to `pytz.timezone('UTC')`
+        Combines `date` and/or `time` fields into `datetime` and converts
+        to `pytz.timezone('UTC')`.
 
+        :returns: self
+        :rtype: `MarketData`
         :param tz: a `pytz` timezone label, defaults to 'America/New_York'
         :param close: market close time, defaults to `dt.datetime.now()` for tz
         :type tz: `str`
         :type close: `str`
-        :raises ValueError: if `dateutil.parser.parse()` fails
-        :raises TypeError: if `dt.datetime.combine()` fails
-        :raises AttributeError: if `pytz.timezone().localize()` fails
         '''
 
         # parse tz if str

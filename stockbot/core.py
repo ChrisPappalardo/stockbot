@@ -4,7 +4,7 @@
 core
 ----
 
-core `stockbot` objects and functions
+core objects and functions
 '''
 
 ################################################################################
@@ -16,7 +16,11 @@ from bs4 import BeautifulSoup
 
 def get_sp500_list(symbols_only=True):
     '''
-    obtains a list of S&P500 stocks from wikipedia
+    returns a list of S&P500 stocks from wikipedia
+
+    :rtype: `list`
+    :param symbols_only: if True, fcn returns a list of symbols, else dicts
+    :type symbols_only: `bool`
     '''
 
     result = list()

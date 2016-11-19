@@ -2,7 +2,11 @@
 
 '''
 
-The `sources` module provides functions and classes that are useful for:
+sources
+-------
+
+provides functions and classes that are useful for sourcing market and other
+data:
 
 - obtaining price quotes for symbols
 - obtaining historical price information for symbols
@@ -124,14 +128,13 @@ _ZIPLINE_QUANDL_BUNDLE = {
 
 class DataError(Exception):
     '''
-    Custom exception for data errors.
+    custom exception for data errors
     '''
 
     def __init__(self, value):
         '''
-        `DataError` constructor.
-
-        :param:`value` the exception message
+        :param value: the exception information
+        :type value: typically `str`
         '''
 
         self.value = value
@@ -149,11 +152,12 @@ def _get_data(symbol,
               mapping=None,
               header=True):
     '''
-    Gets price data for `:param symbol:` from `:param source` and
-    returns a `MarketData` object with OHLC plus extended data.
+    Returns OHLC plus extended data for a given symbol.
 
-    Timestamps are in UTC by default.
+    Note: Timestamps are in UTC by default.
 
+    :returns: a generator that yields objects for each timeseries node
+    :rtype: `MarketData`
     :param symbol: the ticker symbol of the instrument we want to price
     :param source: the URL source of the data; can be http(s) or file
     :param format: the format of the incoming data, 'csv' 'json' 'raw'
@@ -170,27 +174,14 @@ def _get_data(symbol,
     :type pattern: `str` (default=None)
     :type mapping: `list` or `dict` (default=None)
     :type header: `bool` (default=True)
-    :returns: a generator that yields objects for each timeseries node
-    :rtype: `MarketData`
-    :raises IOError: from urlopen if the connection cannot be made
-    :raises DataError: if the returned data is blank or the regex fails
-    :raises ValueError: if the UTF-8 encoding fails
-    :raises:`ValueError` if `json.loads()` fails
-    :raises:`AttributeError` if json elements are not `dict` or `list`
 
-    .. warning:: `:param pattern:` and multi-line csv are mutually exclusive
+    .. warning:: pattern and multi-line csv are mutually exclusive
 
-    .. warning:: `:param mapping:` must be aligned `list` when `:param format:`
-                 is 'csv'
+    .. warning:: mapping must be aligned `list` when format is csv
 
-    .. warning:: `:param mapping:` must be `dict` of (out, in) keys when
-                 `:param format:` is 'json'
+    .. warning:: mapping must be `dict` of (out, in) keys when format is json
 
-    .. warning:: 'json' data elements must be `dict` types
-
-    :Example:
-
-    >>> TODO
+    .. warning:: json data elements must be `dict` types
     '''
 
     # read lines from URL (http(s) or file); returns list of lines or exception
@@ -247,16 +238,12 @@ def _get_data(symbol,
 
 def get_yahoo_quote(symbol):
     '''
-    Gets a delayed price quote for :param:`symbol` from Yahoo! finance.
+    Gets a delayed price quote for `symbol` from Yahoo! finance.
 
-    :param:`symbol` the ticker symbol of the instrument we want to price
-    :type:`symbol` `str`
-    :returns: `MarketData` object with labeled price data
-    :rtype:`pd.Series`
-    :raises:`IOError`
-    :raises:`DataError`
-    :raises:`ValueError`
-    :raises:`AttributeError`
+    :returns: `dict` type object with labeled price data
+    :rtype: `MarketData`
+    :param symbol: the ticker symbol of the instrument we want to price
+    :type symbol: `str`
     '''
 
     return next(_get_data(
@@ -271,16 +258,12 @@ def get_yahoo_quote(symbol):
 
 def get_yahoo_hist(symbol):
     '''
-    Gets historical price data for :param:`symbol` from Yahoo! finance.
+    Gets historical price data for `symbol` from Yahoo! finance.
 
-    :param:`symbol` the ticker symbol of the instrument we want to price
-    :type:`symbol` `str`
-    :returns: a `MarketData` obj generator of labeled price data
-    :rtype:`pd.DataFrame`
-    :raises:`IOError`
-    :raises:`DataError`
-    :raises:`ValueError`
-    :raises:`AttributeError`
+    :returns: generator of `dict` type objects with labeled price data
+    :rtype: `MarketData`
+    :param symbol: the ticker symbol of the instrument we want to price
+    :type symbol: `str`
     '''
 
     return _get_data(
@@ -297,16 +280,12 @@ def get_yahoo_hist(symbol):
 
 def get_cnbc_quote(symbol):
     '''
-    Gets a real-time price quote for :param:`symbol` from CNBC.
+    Gets a real-time price quote for `symbol` from CNBC.
 
-    :param:`symbol` the ticker symbol of the instrument we want to price
-    :type:`symbol` `str`
-    :returns: `MarketData` object with labeled price data
-    :rtype:`pd.Series`
-    :raises:`IOError`
-    :raises:`DataError`
-    :raises:`ValueError`
-    :raises:`AttributeError`
+    :returns: `dict` type object with labeled price data
+    :rtype: `MarketData`
+    :param symbol: the ticker symbol of the instrument we want to price
+    :type symbol: `str`
     '''
 
     return _get_data(
@@ -322,16 +301,12 @@ def get_cnbc_quote(symbol):
 
 def get_symbol(symbol):
     '''
-    Gets a list of securities containing :param:`symbol`.
+    Gets a list of securities containing `symbol`.
 
-    :param:`symbol` the symbol or name fragment to find
-    :type:`search` `str`
-    :returns: a `MarketData` obj generator of results
-    :rtype: `list`
-    :raises:`IOError`
-    :raises:`DataError`
-    :raises:`ValueError`
-    :raises:`AttributeError`
+    :returns: generator of `dict` type objects with labeled symbol data
+    :rtype: `MarketData`
+    :param symbol: the symbol or name fragment to find
+    :type search: `str`
     '''
 
     return _get_data(
@@ -347,12 +322,8 @@ def get_status_US():
     '''
     Get the open/closed status of markets in the United States.
 
-    :returns: a string with time remaining until close or 'closed'
-    :rtype: `str` or `None`
-    :raises:`IOError`
-    :raises:`DataError`
-    :raises:`ValueError`
-    :raises:`AttributeError`
+    :returns: time remaining until close or 'closed'
+    :rtype: `str`
     '''
 
     return next(_get_data(
@@ -365,10 +336,13 @@ def get_status_US():
 
 def get_zipline_dp(bundle=None, calendar=None):
     '''
-    Creates and returns a zipline data portal, used for symbol lookups and data
+    Returns `zipline` data portal, used for symbol lookups and obtaining data.
 
-    `bundle` is a `zipline`BundleData` object (optional)
-    `calendar` is a `zipline`ExchangeCalendar` object (optional)
+    :rtype: `zipline.data.data_portal.DataPortal`
+    :param bundle: optionally specify the `zipline` data bundle to use
+    :param calendar: optionally specify the `zipline` calendar to use
+    :type bundle: `zipline.data.bundles.core.BundleData`
+    :type calendar: `zipline.utils.calendars.exchange_calendar_nyse` type
     '''
 
     if bundle is None: bundle = load(_ZIPLINE_QUANDL_BUNDLE['name'])
@@ -393,44 +367,41 @@ def get_zipline_hist(symbol,
                      calendar=None,
                      dp=None):
     '''
-    Gets daily historical price data for :param:`symbol` from a zipline bundle.
+    Gets daily historical price data for `symbol` from a `zipline` data bundle.
 
-    :param:`symbol` the ticker symbol of the instrument
-    :type:`symbol` `str`
-    :param:`field` the desired OHLC field
-    :type:`field` `str`
-    :param:`end_dt` the ending datetime of the series
-    :type:`end_dt` `dt.datetime`
-    :param:`bar_count` the number of points in the timeseries
-    :type:`bar_count` `int`
-    :param:`frequency` the frequency of the timeseries (e.g. "1d" or "1m")
-    :type:`frequency` `str`
-    :param:`bundle` a `zipline`ExchangeCalendar` object
-    :type:`bundle` `zipline.data.bundles.core.BundleData`
-    :param:`calendar` a `zipline` `BundleData` object
-    :type:`calendar` `str`
-    :returns:`pandas.DataFrame`
-    :rtype:`pandas.DataFrame`
-    :raises:`IOError`
-    :raises:`DataError`
-    :raises:`ValueError`
-    :raises:`AttributeError`
+    :returns: `field` data going back `bar_count` from `end_dt` for `symbol`
+    :rtype: `pandas.Series` with `name` attribute set to
+            `zipline.assets._assets.Equity`
+    :param symbol: the ticker symbol of the instrument
+    :param field: the desired OHLC field
+    :param end_dt: the ending datetime of the series
+    :param bar_count: the number of points in the timeseries
+    :param frequency: the frequency of the timeseries (e.g. "1d" or "1m")
+    :param bundle: optionally specify the `zipline` data bundle to use
+    :param calendar: optionally specify the `zipline` calendar to use
+    :type symbol: `str`
+    :type field: `str`
+    :type end_dt: `datetime.datetime` type object
+    :type bar_count: `int`
+    :type frequency: `str`
+    :type bundle: `zipline.data.bundles.core.BundleData`
+    :type calendar: `zipline.utils.calendars.exchange_calendar_nyse` type
 
     Snap a date to the calender with::
 
-         get_calendar(cal).all_sessions.asof(Timestamp(end_dt))
+      get_calendar(cal).all_sessions.asof(Timestamp(end_dt))
 
     Get the last traded datetime for a symbol and calendar dt with::
 
-         dp.get_last_traded_dt(
-             dp.asset_finder.lookup_symbol(symbol, None),
-             get_calendar(cal).all_sessions.asof(Timestamp(end_dt)),
-             'daily',
-         )
+      dp.get_last_traded_dt(
+          dp.asset_finder.lookup_symbol(symbol, None),
+          get_calendar(cal).all_sessions.asof(Timestamp(end_dt)),
+          'daily',
+      )
 
     Get the session index with::
 
-         get_calendar(cal).all_sessions.searchsorted(Timestamp(end_dt))
+      get_calendar(cal).all_sessions.searchsorted(Timestamp(end_dt))
     '''
 
     dp = get_zipline_dp(bundle, calendar) if dp is None else dp

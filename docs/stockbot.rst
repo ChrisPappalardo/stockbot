@@ -4,6 +4,30 @@ stockbot package
 Submodules
 ----------
 
+stockbot.core module
+--------------------
+
+.. automodule:: stockbot.core
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+stockbot.marketdata module
+--------------------------
+
+.. automodule:: stockbot.marketdata
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+stockbot.portfolio module
+-------------------------
+
+.. automodule:: stockbot.portfolio
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 stockbot.sources module
 -----------------------
 

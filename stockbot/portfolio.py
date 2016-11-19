@@ -4,7 +4,7 @@
 portfolio
 ---------
 
-`stockbot` portfolio classes and functions
+Portfolio class for analyzing instruments as a group
 '''
 
 ################################################################################
@@ -23,17 +23,25 @@ from .sources import (
 
 class Portfolio(object):
     '''
-    Class for storing a collection of market instruments
+    class for analyzing instruments as a group
     '''
 
     def __init__(self, *args, **kwargs):
         '''
-        Looks up ticker symbols and stores `zipline` instrument objects
+        looks up ticker symbols and stores `zipline` instrument objects
 
-        `args` is one or more ticker symbol `str`s
-        `kwargs` is one or more config key/value pairs
+        :param bundle: `zipline` data bundle to use (default=`None`)
+        :param calendar: `zipline` calendar to use (default=`None`)
+        :param log: `logbook.Logger` instance (default=`Mock` object)
+        :param dataportal: `zipline` data portal to use (default=`None`)
+        :type bundle: `zipline.data.bundles.core.BundleData`
+        :type calendar: `zipline.utils.calendars.exchange_calendar_nyse` type
+        :type log: `logbook.Logger`
+        :type dataporta: `zipline.data.data_portal.DataPortal`
 
-        example: Portfolio('AAPL', 'GOOG', calendar=get_calendar('NYSE'))
+        example::
+
+          Portfolio('AAPL', 'GOOG', calendar=get_calendar('NYSE'))
         '''
 
         # get config settings
@@ -61,9 +69,13 @@ class Portfolio(object):
 
     def adx_rank(self, asof=None, bar_count=28):
         '''
-        Returns a list of tuples ordered by descending ADX rating.
+        returns `Portfolio` object instruments ordered by descending ADX rating
 
-        `asof` is a `datetime`-like object with the desired day or `utcnow()`
+        :rtype: `list` of `tuple` objects
+        :param asof: as-of date
+        :param bar_count: ADX calculation window
+        :type asof: `datetime.datetime` type object (default=now)
+        :type bar_count: `int`
         '''
 
         asof = Timestamp.utcnow() if asof is None else Timestamp(asof)
