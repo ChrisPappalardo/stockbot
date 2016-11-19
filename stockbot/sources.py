@@ -14,12 +14,13 @@ The `sources` module provides functions and classes that are useful for:
 ###############################################################################
 
 
+from collections import (MutableMapping, MutableSequence)
 import csv
 import datetime as dt
 import json
 import re
 import sys
-if sys.version_info > (3, 0):
+if sys.version_info > (3, 0): # pragma: no cover
     from urllib.parse import quote_plus
     from urllib.request import urlopen
 else:
@@ -45,19 +46,37 @@ _YAHOO_QUOTE = {
     'format': 'csv',
     'tz': 'America/New_York',
     'close': parse('4:00pm'),
-    'mapping': ['symbol', 'last', 'date', 'time', 'change', 'open', 'high',
-                'low', 'volume'],
+    'mapping': [
+        'symbol',
+        'last',
+        'date',
+        'time',
+        'change',
+        'open',
+        'high',
+        'low',
+        'volume'
+    ],
 }
 
 
 _YAHOO_HIST = {
     'source': (
         u'http://ichart.finance.yahoo.com/' +
-        u'table.csv?s=%s&d=11&e=31&f=9999&g=d&a=0&b=1&c=1900&ignore=.csv'),
+        u'table.csv?s=%s&d=11&e=31&f=9999&g=d&a=0&b=1&c=1900&ignore=.csv'
+    ),
     'format': 'csv',
     'tz': 'America/New_York',
     'close': parse('4:00pm'),
-    'mapping': ['date', 'open', 'high', 'low', 'close', 'volume', 'last'],
+    'mapping': [
+        'date',
+        'open',
+        'high',
+        'low',
+        'close',
+        'volume',
+        'last'
+    ],
 }
 
 
@@ -66,7 +85,7 @@ _CNBC_QUOTE = {
     'format': 'json',
     'tz': 'America/New_York',
     'close': parse('4:00pm'),
-    'pattern': u'var quoteDataObj = \[({.*?})\]',
+    'pattern': u'var quoteDataObj = (\[{.*?}\])',
     'mapping': {
         'symbol': 'symbol',
         'last': 'last',
@@ -74,32 +93,31 @@ _CNBC_QUOTE = {
         'open': 'open',
         'high': 'high',
         'low': 'low',
-        'volume': 'volume'
-    }
+        'volume': 'volume',
+    },
 }
 
 
 _YAHOO_SEARCH = {
     'source': (
         u'http://d.yimg.com/aq/' +
-        u'autoc?query=%s&region=US&lang=en-US&' +
-        u'callback=YAHOO.util.ScriptNodeDataSource.callbacks'),
+        u'autoc?query=%s&region=US&lang=en-US'
+    ),
     'format': 'json',
-    'pattern': (
-        u'YAHOO.util.ScriptNodeDataSource.callbacks' +
-        u'\({"ResultSet":{"Query":".*?","Result":(\[.*?\])}}\)'),
+    'pattern': u'{"ResultSet":{"Query":".*?","Result":(\[.*?\])}}',
     'mapping': {
         'symbol': 'symbol',
         'name': 'name',
         'exchange': 'exch',
-        'type': 'typeDisp'}
+        'type': 'typeDisp',
+    },
 }
 
 
 _YAHOO_STATUS_US = {
     'source': u'http://finance.yahoo.com',
     'format': 'raw',
-    'pattern': u'U\.S\. Markets close in ',
+    'pattern': u'>U\.S\. Markets (.*?)<',
 }
 
 
@@ -127,7 +145,9 @@ class DataError(Exception):
         return str(self.value)
 
 
-def _get_data(symbol, source, format,
+def _get_data(symbol,
+              source,
+              format,
               tz=None,
               close=None,
               pattern=None,
@@ -178,14 +198,9 @@ def _get_data(symbol, source, format,
     >>> TODO
     '''
 
-    # get data from URL; http(s) and file supported
-    data = urlopen(source % quote_plus(symbol))
-
-    # read all lines; returns a list, which preserves file lines (csv)
-    data = data.readlines()
-
-    if not data:
-        raise DataError('data result was empty')
+    # read lines from URL (http(s) or file); returns list of lines or exception
+    source = source % quote_plus(symbol) if symbol else source
+    data = urlopen(source).readlines()
 
     # strip regex pattern if passed
     if pattern:
@@ -193,10 +208,9 @@ def _get_data(symbol, source, format,
         # collapse data list before applying regex
         data = re.compile(pattern, re.DOTALL).search(''.join(data))
 
-        # extract matched pattern and convert back to list
-        data = list(data.group(1)) if data else None
-
-        if not data:
+        # extract matched pattern or raise exception
+        data = data.group(1) if data.group else None
+        if not data: # pragma: no cover
             raise DataError('regex on data failed to produce a result')
 
     # csv format: yield each line as a MarketData object with clean dt
@@ -208,7 +222,7 @@ def _get_data(symbol, source, format,
 
         for row in csv.reader(data):
 
-            if len(row) != len(mapping):
+            if len(row) != len(mapping): # pragma: no cover
                 raise DataError('csv row length does not match mapping')
 
             yield MarketData(dict(zip(mapping, row))).clean_dt(tz, close)
@@ -218,18 +232,17 @@ def _get_data(symbol, source, format,
 
         # decode json data; force top-level to list
         data = json.loads(data)
-        data = [data] if not isinstance(data, abc_ms) else data
+        data = [data] if not isinstance(data, MutableSequence) else data
 
-        for obj in data:
+        for o in data:
 
-            if not isinstance(obj, abc_mm):
+            if not isinstance(o, MutableMapping): # pragma: no cover
                 raise DataError('json elements are not dicts')
 
             # replace keys
-            obj = dict(map(lambda a, b: (a, obj.get(b, None)),
-                           mapping.items()))
+            o = dict(map(lambda (a, b): (a, o.get(b, None)), mapping.items()))
 
-            yield MarketData(obj).clean_dt(tz, close)
+            yield MarketData(o).clean_dt(tz, close)
 
     # raw format: yield the raw result
     elif format == 'raw':
@@ -257,7 +270,8 @@ def get_yahoo_quote(symbol):
         _YAHOO_QUOTE['format'],
         _YAHOO_QUOTE['tz'],
         _YAHOO_QUOTE['close'],
-        mapping=_YAHOO_QUOTE['mapping']))
+        mapping=_YAHOO_QUOTE['mapping'],
+    ))
 
 
 def get_yahoo_hist(symbol):
@@ -280,7 +294,8 @@ def get_yahoo_hist(symbol):
         _YAHOO_HIST['format'],
         _YAHOO_HIST['tz'],
         _YAHOO_HIST['close'],
-        mapping=_YAHOO_HIST['mapping'])
+        mapping=_YAHOO_HIST['mapping'],
+    )
 
 #    return pd.DataFrame(d).T
 
@@ -305,7 +320,9 @@ def get_cnbc_quote(symbol):
         _CNBC_QUOTE['format'],
         _CNBC_QUOTE['tz'],
         _CNBC_QUOTE['close'],
-        mapping=_CNBC_QUOTE['mapping'])
+        _CNBC_QUOTE['pattern'],
+        _CNBC_QUOTE['mapping'],
+    )
 
 
 def get_symbol(symbol):
@@ -326,14 +343,16 @@ def get_symbol(symbol):
         symbol,
         _YAHOO_SEARCH['source'],
         _YAHOO_SEARCH['format'],
-        _YAHOO_SEARCH['mapping'])
+        pattern=_YAHOO_SEARCH['pattern'],
+        mapping=_YAHOO_SEARCH['mapping'],
+    )
 
 
 def get_status_US():
     '''
     Get the open/closed status of markets in the United States.
 
-    :returns: a string with time remaining until close or None if closed
+    :returns: a string with time remaining until close or 'closed'
     :rtype: `str` or `None`
     :raises:`IOError`
     :raises:`DataError`
@@ -345,7 +364,8 @@ def get_status_US():
         '',
         _YAHOO_STATUS_US['source'],
         _YAHOO_STATUS_US['format'],
-        pattern=_YAHOO_STATUS_US['pattern']))
+        pattern=_YAHOO_STATUS_US['pattern'],
+    ))
 
 
 def get_zipline_dp(bundle=None, calendar=None):
@@ -367,6 +387,7 @@ def get_zipline_dp(bundle=None, calendar=None):
         equity_daily_reader=bundle.equity_daily_bar_reader,
         adjustment_reader=bundle.adjustment_reader,
     )
+
 
 def get_zipline_hist(symbol,
                      field,

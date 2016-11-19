@@ -32,7 +32,7 @@ class TestMarketData(unittest.TestCase):
 
     def test_MarketData(self):
         '''
-        MarketData ingests and converts data as expected
+        MarketData ingests and converts data as expected, and acts like a dict
         '''
 
         a = MarketData(self.data_in)
@@ -48,6 +48,11 @@ class TestMarketData(unittest.TestCase):
             'change': -4.84,
         }
         self.assertEqual(a, b)
+        self.assertEqual(len(a), len(b))
+        self.assertEqual(len(a), len(a.dict))
+        self.assertEqual(str(a), str(a.dict))
+        self.assertEqual(repr(a), repr(a.dict))
+        self.assertEqual(a.__delitem__('high'), b.__delitem__('high'))
 
     def test_MarketData_decimal(self):
         '''

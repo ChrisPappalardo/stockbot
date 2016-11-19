@@ -15,7 +15,10 @@ from pandas import Timestamp
 from numpy import isnan
 from talib.abstract import ADX
 
-from .sources import (get_zipline_dp, get_zipline_hist)
+from .sources import (
+    get_zipline_dp,
+    get_zipline_hist,
+)
 
 
 class Portfolio(object):
@@ -86,7 +89,7 @@ class Portfolio(object):
             except Exception as e:
                 if 'inputs are all NaN' in e:
                     self.log.warn('NaN inputs for %s on %s' % (i.symbol, asof))
-                else:
+                else: # pragma: no cover
                     raise
 
         return sorted(result.items(), key=lambda t: t[1], reverse=True)
