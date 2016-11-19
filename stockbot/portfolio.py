@@ -87,7 +87,7 @@ class Portfolio(object):
                 else:
                     result[i] = ADX(input)[-1]
             except Exception as e:
-                if 'inputs are all NaN' in e:
+                if 'inputs are all NaN' in str(e):
                     self.log.warn('NaN inputs for %s on %s' % (i.symbol, asof))
                 else: # pragma: no cover
                     raise

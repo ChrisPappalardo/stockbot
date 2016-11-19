@@ -19,18 +19,13 @@ import csv
 import datetime as dt
 import json
 import re
-import sys
-if sys.version_info > (3, 0): # pragma: no cover
-    from urllib.parse import quote_plus
-    from urllib.request import urlopen
-else:
-    from urllib import quote_plus
-    from urllib2 import urlopen
 
 from dateutil.parser import parse
 from dateutil.tz import tzlocal
 from pandas.tslib import Timestamp
 import pytz
+from six.moves.urllib.parse import quote_plus
+from six.moves.urllib.request import urlopen
 from zipline.assets._assets import Equity
 from zipline.data.bundles.core import load
 from zipline.data.data_portal import DataPortal
@@ -240,7 +235,7 @@ def _get_data(symbol,
                 raise DataError('json elements are not dicts')
 
             # replace keys
-            o = dict(map(lambda (a, b): (a, o.get(b, None)), mapping.items()))
+            o = dict(map(lambda x: (x[0], o.get(x[1], None)), mapping.items()))
 
             yield MarketData(o).clean_dt(tz, close)
 

@@ -18,6 +18,7 @@ import re
 from dateutil.parser import parse
 from dateutil.tz import tzlocal
 import pytz
+from six import string_types
 
 
 class MarketData(MutableMapping):
@@ -56,7 +57,7 @@ class MarketData(MutableMapping):
         p = re.compile('^\-?(0|[1-9]\d*)(.\d+)([eE][\+\-]\d+)?$')
 
         # if value is a str and appears to be numeric, recast type
-        if isinstance(v, str) and re.compile(p).search(v):
+        if isinstance(v, string_types) and re.compile(p).search(v):
 
             if self.decimal:
                 v = Decimal(v)

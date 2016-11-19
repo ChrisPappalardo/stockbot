@@ -11,21 +11,11 @@ Tests `portfolio` module.
 import unittest
 
 from logbook import Logger
-from mock import (
-    Mock,
-    patch,
-)
-from numpy import (
-    nan,
-    random,
-)
-from pandas import (
-    Series,
-    Timestamp,
-)
-from stockbot.portfolio import (
-    Portfolio,
-)
+from mock import (Mock, patch)
+from numpy import (nan, random)
+from pandas import (Series, Timestamp)
+
+from stockbot.portfolio import Portfolio
 
 
 class TestPortfolio(unittest.TestCase):

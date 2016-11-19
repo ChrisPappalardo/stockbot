@@ -8,10 +8,7 @@ Tests `stockbot` core package.
 '''
 
 import unittest
-from mock import (
-    patch,
-    Mock,
-)
+from mock import (patch, Mock)
 
 from stockbot.core import (
     get_sp500_list,
@@ -30,7 +27,8 @@ class TestCore(unittest.TestCase):
         '''
 
         a = Mock()
-        a.content = open('tests/data/sp500wikilist.html', 'r').read()
+        with open('tests/data/sp500wikilist.html', 'r') as f:
+            a.content = f.read()
         mock_get.return_value = a
         a = get_sp500_list(False)
         self.assertEqual(len(a), 505)
