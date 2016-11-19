@@ -1,6 +1,13 @@
 stockbot package
 ================
 
+Subpackages
+-----------
+
+.. toctree::
+
+    stockbot.algo
+
 Submodules
 ----------
 
