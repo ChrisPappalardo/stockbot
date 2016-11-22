@@ -33,7 +33,7 @@ test_requirements = [
 
 setup(
     name='stockbot',
-    version='0.1.0',
+    version='0.2.0',
     description='Stock market analysis library written in Python.',
     long_description=readme + '\n\n' + history,
     author='Chris Pappalardo',

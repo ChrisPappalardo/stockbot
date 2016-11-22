@@ -53,29 +53,21 @@ Usage
 
 Stockbot can provide you with a list of S&P500 stocks from `wikipedia`::
 
-.. code-block:: python
-
    >>> from stockbot.core import get_sp500_list
    >>> get_sp500_list()
    [u'MMM', u'ABT', u'ABBV', u'ACN', u'ATVI', u'AYI', u'ADBE', ... u'ZTS']
    
 To get a delayed quote from Yahoo! use `get_yahoo_quote`::
-
-.. code-block:: python
      
    >>> from stockbot.sources import get_yahoo_quote
    >>> get_yahoo_quote('YHOO')
-   {'volume': 3405057, 'last': 41.0, 'symbol': 'YHOO', 'datetime': datetime.datetime(2016, 11, 22, 18, 0, tzinfo=<UTC>),
-   'high': 41.4, 'low': 40.83, 'open': 41.2, 'change': -0.11}
+   {'volume': 3405057, 'last': 41.0, 'symbol': 'YHOO', 'datetime': datetime.datetime(2016, 11, 22, 18, 0, tzinfo=<UTC>), 'high': 41.4, 'low': 40.83, 'open': 41.2, 'change': -0.11}
 
 Or a real-time quote from CNBC using `get_cnbc_quote`::
 
-.. code-block:: python
-
    >>> from stockbot.sources import get_cnbc_quote
    >>> next(get_cnbc_quote('YHOO'))
-   {'volume': 3528566, 'last': 41.04, 'symbol': u'YHOO', 'datetime': datetime.datetime(2016, 11, 22, 21, 0, tzinfo=<UTC>),
-   'high': 41.395, 'low': 40.83, 'open': 41.2, 'change': -0.07}
+   {'volume': 3528566, 'last': 41.04, 'symbol': u'YHOO', 'datetime': datetime.datetime(2016, 11, 22, 21, 0, tzinfo=<UTC>), 'high': 41.395, 'low': 40.83, 'open': 41.2, 'change': -0.07}
 
 Note:: `get_cnbc_quote` returns a generator
 
@@ -83,18 +75,13 @@ Stockbot returns quote data using a `dict` like object `stockbot.marketdata.Mark
 certain data and datetime processing.
 
 Historical data can be obtained from Yahoo! using `get_yahoo_hist`::
-
-.. code-block:: python
      
    >>> from stockbot.sources import get_yahoo_hist
    >>> get_yahoo_hist('YHOO')
-   {'high': 41.48, 'last': 41.110001, 'datetime': datetime.datetime(2016, 11, 21, 21, 0, tzinfo=<UTC>),
-   'volume': 11338000, 'low': 40.939999, 'close': 41.110001, 'open': 41.439999}
+   {'high': 41.48, 'last': 41.110001, 'datetime': datetime.datetime(2016, 11, 21, 21, 0, tzinfo=<UTC>), 'volume': 11338000, 'low': 40.939999, 'close': 41.110001, 'open': 41.439999}
    
 Historical data can also be obtained from zipline bundles using the `get_zipline_hist` function::
 
-.. code-block:: python
-     
    >>> from stockbot.sources import get_zipline_hist
    >>> get_zipline_hist('YHOO', 'close', 
    2016-01-04 00:00:00+00:00    31.41
@@ -106,17 +93,13 @@ Zipline trading algorithms that utilize the Directional Movement technical indic
 `stockbot.algo`.  For example, the following zipline trading algorithm would use ADX and DI to trade the
 top trending stocks and Stochastic Oscillators to trade the top oscillating stocks in the S&P 500 index::
 
-.. code-block:: python
-
    from logbook import Logger
-
    from stockbot.algo.core import (
        adx_init,
        trade_di,
        trade_so,
    )
    from stockbot.core import get_sp500_list
-
 
    def initialize(context):
        return adx_init(
@@ -128,7 +111,6 @@ top trending stocks and Stochastic Oscillators to trade the top oscillating stoc
            symbols=get_sp500_list(),
            log=Logger('Stockbot'),
        )
-
 
    def handle_data(context, data):
        # increment counter and log datetime
@@ -157,7 +139,7 @@ top trending stocks and Stochastic Oscillators to trade the top oscillating stoc
 
 To run this algorithm in a docker container, copy the code above into a file and issue the following::
 
-  $ docker-compose -f docker-compose-dev.yml run --rm stockbot zipline run -f <file>
+  $ zipline run -f <file> --start <date> --end <date>
 
-Use the `--start <YYYY-M-D>` and `--end <YYYY-M-D>` args to pass dates.  `-o /path/file.pickle`
-to capture pickled results that can be used in python.
+Use the the `<YYYY-M-D>` format for dates.  Use `-o /path/file.pickle` to capture pickled results that
+can be used in python.

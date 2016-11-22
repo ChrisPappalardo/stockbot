@@ -7,9 +7,10 @@ algo.core
 core functions and objects for stockbot trading algorithms
 '''
 
-################################################################################
+###############################################################################
 
 
+from mock import Mock
 from talib.abstract import (
     PLUS_DI,
     MINUS_DI,
@@ -17,10 +18,8 @@ from talib.abstract import (
 )
 from zipline.api import (
     order_percent,
-    order_target,
 )
 
-from stockbot.core import get_sp500_list
 import stockbot.portfolio as sbp
 
 

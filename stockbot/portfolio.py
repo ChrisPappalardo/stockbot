@@ -7,7 +7,7 @@ portfolio
 Portfolio class for analyzing instruments as a group
 '''
 
-################################################################################
+###############################################################################
 
 
 from mock import Mock
@@ -48,8 +48,10 @@ class Portfolio(object):
         self.bundle = kwargs.pop('bundle', None)
         self.calendar = kwargs.pop('calendar', None)
         self.log = kwargs.pop('log', Mock())
-        self.dataportal = kwargs.pop('dp',
-                                     get_zipline_dp(self.bundle, self.calendar))
+        self.dataportal = kwargs.pop(
+            'dp',
+            get_zipline_dp(self.bundle, self.calendar),
+        )
 
         # populate instruments
         self.portfolio = list()
@@ -101,7 +103,7 @@ class Portfolio(object):
             except Exception as e:
                 if 'inputs are all NaN' in str(e):
                     self.log.warn('NaN inputs for %s on %s' % (i.symbol, asof))
-                else: # pragma: no cover
+                else:  # pragma: no cover
                     raise
 
         return sorted(result.items(), key=lambda t: t[1], reverse=True)

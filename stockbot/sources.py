@@ -20,14 +20,11 @@ data:
 
 from collections import (MutableMapping, MutableSequence)
 import csv
-import datetime as dt
 import json
 import re
 
 from dateutil.parser import parse
-from dateutil.tz import tzlocal
 from pandas.tslib import Timestamp
-import pytz
 from six.moves.urllib.parse import quote_plus
 from six.moves.urllib.request import urlopen
 from zipline.assets._assets import Equity
@@ -196,7 +193,7 @@ def _get_data(symbol,
 
         # extract matched pattern or raise exception
         data = data.group(1) if data.group else None
-        if not data: # pragma: no cover
+        if not data:  # pragma: no cover
             raise DataError('regex on data failed to produce a result')
 
     # csv format: yield each line as a MarketData object with clean dt
@@ -208,7 +205,7 @@ def _get_data(symbol,
 
         for row in csv.reader(data):
 
-            if len(row) != len(mapping): # pragma: no cover
+            if len(row) != len(mapping):  # pragma: no cover
                 raise DataError('csv row length does not match mapping')
 
             yield MarketData(dict(zip(mapping, row))).clean_dt(tz, close)
@@ -222,7 +219,7 @@ def _get_data(symbol,
 
         for o in data:
 
-            if not isinstance(o, MutableMapping): # pragma: no cover
+            if not isinstance(o, MutableMapping):  # pragma: no cover
                 raise DataError('json elements are not dicts')
 
             # replace keys
@@ -345,8 +342,9 @@ def get_zipline_dp(bundle=None, calendar=None):
     :type calendar: `zipline.utils.calendars.exchange_calendar_nyse` type
     '''
 
-    if bundle is None: bundle = load(_ZIPLINE_QUANDL_BUNDLE['name'])
-    if calendar is None: calendar = get_calendar(_ZIPLINE_QUANDL_BUNDLE['cal'])
+    z = _ZIPLINE_QUANDL_BUNDLE
+    bundle = load(z['name']) if bundle is None else bundle
+    calendar = get_calendar(z['cal']) if calendar is None else calendar
 
     return DataPortal(
         bundle.asset_finder,
@@ -414,4 +412,4 @@ def get_zipline_hist(symbol,
         bar_count,
         frequency,
         field,
-    ).iloc[:,0]
+    ).iloc[:, 0]

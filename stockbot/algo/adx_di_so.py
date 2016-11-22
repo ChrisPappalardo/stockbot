@@ -7,7 +7,7 @@ adx_di_so
 stockbot S&P500 directional movement and oscillator trading system using adx
 '''
 
-################################################################################
+###############################################################################
 
 
 from logbook import Logger

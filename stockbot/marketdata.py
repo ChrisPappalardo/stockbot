@@ -7,7 +7,7 @@ marketdata
 MarketData class for storing and converting OHLC data
 '''
 
-################################################################################
+###############################################################################
 
 
 from collections import MutableMapping
