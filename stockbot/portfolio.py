@@ -14,6 +14,7 @@ from mock import Mock
 from pandas import Timestamp
 from numpy import isnan
 from talib.abstract import ADX
+from zipline.errors import SymbolNotFound
 
 from .sources import (
     get_zipline_dp,
@@ -52,13 +53,19 @@ class Portfolio(object):
             'dp',
             get_zipline_dp(self.bundle, self.calendar),
         )
+        self.strict = kwargs.pop('strict', False)
 
         # populate instruments
         self.portfolio = list()
         for s in args:
-            i = self.dataportal.asset_finder.lookup_symbol(s, None)
-            if i not in self.portfolio:
-                self.portfolio.append(i)
+            try:
+                i = self.dataportal.asset_finder.lookup_symbol(s, None)
+                if i not in self.portfolio:
+                    self.portfolio.append(i)
+            except SymbolNotFound as e:
+                self.log.error('error adding %s: %s' % (s, str(e)))
+                if self.strict:
+                    raise
 
     def __len__(self):
         return self.portfolio.__len__()

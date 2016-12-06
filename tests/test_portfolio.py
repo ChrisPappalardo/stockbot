@@ -14,6 +14,7 @@ from logbook import Logger
 from mock import (Mock, patch)
 from numpy import (nan, random)
 from pandas import (Series, Timestamp)
+from zipline.errors import SymbolNotFound
 
 from stockbot.portfolio import Portfolio
 
@@ -31,6 +32,11 @@ class TestPortfolio(unittest.TestCase):
         self.assertTrue(Portfolio('GE'))
         self.assertTrue(str(Portfolio('GE')))
         self.assertTrue(repr(Portfolio('GE')))
+        self.assertEqual(len(Portfolio('THISSHOULDNOTBREAK')), 0)
+        try:
+            Portfolio('THISSHOULDBREAK', strict=True)
+        except Exception as e:
+            self.assertEqual(type(e), type(SymbolNotFound()))
 
     @patch('stockbot.portfolio.get_zipline_hist')
     def test_portfolio_adx_rank(self, mock_get_zipline_hist):
