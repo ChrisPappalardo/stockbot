@@ -3,9 +3,9 @@
 
 
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 except ImportError:
-    from distutils.core import setup
+    from distutils.core import setup, find_packages
 
 
 with open('README.rst') as readme_file:
@@ -39,11 +39,7 @@ setup(
     author='Chris Pappalardo',
     author_email='cpappala@yahoo.com',
     url='https://github.com/ChrisPappalardo/stockbot',
-    packages=[
-        'stockbot',
-    ],
-    package_dir={'stockbot':
-                 'stockbot'},
+    packages=find_packages(),
     include_package_data=True,
     install_requires=requirements,
     license='CC BY-NC-ND 4.0',
