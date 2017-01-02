@@ -32,10 +32,11 @@ htmlcov
 # Translations
 *.mo
 
-# Mr Developer
+# other devops, IDE, etc.
 .mr.developer.cfg
 .project
 .pydevproject
+/.settings/
 
 # Complexity
 output/*.html
@@ -46,4 +47,3 @@ docs/_build
 
 # zipline
 .zipline
-/.settings/
