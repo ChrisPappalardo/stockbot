@@ -96,9 +96,9 @@ class Portfolio(object):
             c = self.calendar
             dp = self.dataportal
             input = {
-                'high': f(i, 'high', asof, bar_count, '1d', b, c, dp),
-                'low': f(i, 'low', asof, bar_count, '1d', b, c, dp),
-                'close': f(i, 'close', asof, bar_count, '1d', b, c, dp),
+                'high': f(i, 'high', asof, bar_count, '1d', 'daily', b, c, dp),
+                'low': f(i, 'low', asof, bar_count, '1d', 'daily', b, c, dp),
+                'close': f(i, 'close', asof, bar_count, '1d', 'daily', b, c, dp), # noqa
             }
             # set ADX or log that we don't have data
             try:

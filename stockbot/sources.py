@@ -361,6 +361,7 @@ def get_zipline_hist(symbol,
                      end_dt,
                      bar_count=1,
                      frequency='1d',
+                     data_frequency='daily',
                      bundle=None,
                      calendar=None,
                      dp=None):
@@ -412,4 +413,5 @@ def get_zipline_hist(symbol,
         bar_count,
         frequency,
         field,
+        data_frequency,
     ).iloc[:, 0]

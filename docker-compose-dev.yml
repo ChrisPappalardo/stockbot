@@ -1,6 +1,7 @@
 version: '2'
 
-#volumes:
+volumes:
+  zipline_data_dev: {}
 #  postgres_data_dev: {}
 #  postgres_backup_dev: {}
 
@@ -21,4 +22,4 @@ services:
     command: zipline ingest -b quantopian-quandl
     volumes:
       - .:/app
-      - .zipline:/root/.zipline
+      - zipline_data_dev:/root/.zipline

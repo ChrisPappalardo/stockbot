@@ -37,10 +37,10 @@ packages pre-installed.
 
 One way to do this is to first build the `quantopian/zipline` Docker image with the following command::
 
-  $ docker build -t quantopian/zipline https://github.com/quantopian/zipline.git#1.0.2
+  $ docker build -t quantopian/zipline https://github.com/quantopian/zipline.git
 
 Using a docker-compose development configuration similar to the one contained in stockbot, you could
-then create a development container with::
+then create a development container and install the latest quandl bundle with::
 
   $ docker-compose -f docker-compose-dev.yml up
 
