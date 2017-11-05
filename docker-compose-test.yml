@@ -1,24 +1,14 @@
 version: '2'
 
-#volumes:
-#  postgres_data_dev: {}
-#  postgres_backup_dev: {}
+volumes:
+  zipline_data_test: {}
 
 services:
-#  postgres:
-#    build: ./compose/postgres
-#    volumes:
-#      - postgres_data_dev:/var/lib/postgresql/data
-#      - postgres_backup_dev:/backups
-#    environment:
-#      - POSTGRES_USER=stockbot
-
   stockbot:
     build:
       context: .
       dockerfile: ./compose/stockbot/Dockerfile-test
     image: cpappalardo/stockbot:test
-    command: zipline ingest -b quantopian-quandl
     volumes:
       - .:/app
-      - .zipline:/root/.zipline
+      - zipline_data_test:/root/.zipline
