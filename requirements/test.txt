@@ -4,4 +4,3 @@
 # additional test requirements
 mock>=2.0.0
 tox>=2.3.1
-wheel>=0.23.0

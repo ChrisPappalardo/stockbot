@@ -10,6 +10,13 @@ MarketData class for storing and converting OHLC data
 ###############################################################################
 
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+from builtins import str
 from collections import MutableMapping
 import datetime as dt
 from decimal import Decimal
@@ -49,7 +56,7 @@ class MarketData(MutableMapping):
         '''
 
         # parse date, time, datetime value strings to dt objects
-        if k in ['date', 'time', 'datetime'] and isinstance(v, str):
+        if k in ['date', 'time', 'datetime'] and isinstance(v, string_types):
             v = parse(v)
 
         p = re.compile('^\-?(0|[1-9]\d*)(.\d+)([eE][\+\-]\d+)?$')
@@ -97,7 +104,7 @@ class MarketData(MutableMapping):
         '''
 
         # parse tz if str
-        if isinstance(tz, str):
+        if isinstance(tz, string_types):
             tz = pytz.timezone(tz)
 
         # set tz to America/New_York by default

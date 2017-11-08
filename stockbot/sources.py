@@ -18,15 +18,21 @@ data:
 ###############################################################################
 
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 from collections import (MutableMapping, MutableSequence)
 import csv
+from six import StringIO
 import json
 import re
 
 from dateutil.parser import parse
 from pandas.tslib import Timestamp
-from six.moves.urllib.parse import quote_plus
-from six.moves.urllib.request import urlopen
+from requests import get
 from zipline.assets._assets import Equity
 from zipline.data.bundles.core import load
 from zipline.data.data_portal import DataPortal
@@ -37,9 +43,10 @@ from .marketdata import MarketData
 
 _YAHOO_QUOTE = {
     'source': (
-        u'http://download.finance.yahoo.com/d/' +
-        u'quotes.csv?s=%s&f=sl1d1t1c1ohgv&e=.csv'),
+        'http://download.finance.yahoo.com/d/' +
+        'quotes.csv?s=%s&f=sl1d1t1c1ohgv&e=.csv'),
     'format': 'csv',
+    'header': False,
     'tz': 'America/New_York',
     'close': parse('4:00pm'),
     'mapping': [
@@ -58,9 +65,14 @@ _YAHOO_QUOTE = {
 
 _YAHOO_HIST = {
     'source': (
-        u'http://ichart.finance.yahoo.com/' +
-        u'table.csv?s=%s&d=11&e=31&f=9999&g=d&a=0&b=1&c=1900&ignore=.csv'
+        'https://query1.finance.yahoo.com/v7/finance/download/%s?' +
+        'period1=0&period2=9999999999&interval=1d&events=history&crumb=%s'
     ),
+    'ref_source': (
+        'https://finance.yahoo.com/quote/%s/history?' +
+        'period1=0&period2=9999999999&interval=1d&filter=history&frequency=1d'
+    ),
+    'ref_pattern': 'CrumbStore":{"crumb":"(.*?)"}',
     'format': 'csv',
     'tz': 'America/New_York',
     'close': parse('4:00pm'),
@@ -77,11 +89,11 @@ _YAHOO_HIST = {
 
 
 _CNBC_QUOTE = {
-    'source': u'http://data.cnbc.com/quotes/%s',
+    'source': 'http://data.cnbc.com/quotes/%s',
     'format': 'json',
     'tz': 'America/New_York',
     'close': parse('4:00pm'),
-    'pattern': u'var quoteDataObj = (\[{.*?}\])',
+    'pattern': 'var quoteDataObj = (\[{.*?}\])',
     'mapping': {
         'symbol': 'symbol',
         'last': 'last',
@@ -96,11 +108,11 @@ _CNBC_QUOTE = {
 
 _YAHOO_SEARCH = {
     'source': (
-        u'http://d.yimg.com/aq/' +
-        u'autoc?query=%s&region=US&lang=en-US'
+        'http://d.yimg.com/aq/' +
+        'autoc?query=%s&region=US&lang=en-US'
     ),
     'format': 'json',
-    'pattern': u'{"ResultSet":{"Query":".*?","Result":(\[.*?\])}}',
+    'pattern': '{"ResultSet":{"Query":".*?","Result":(\[.*?\])}}',
     'mapping': {
         'symbol': 'symbol',
         'name': 'name',
@@ -111,9 +123,9 @@ _YAHOO_SEARCH = {
 
 
 _YAHOO_STATUS_US = {
-    'source': u'http://finance.yahoo.com',
+    'source': 'http://finance.yahoo.com',
     'format': 'raw',
-    'pattern': u'>U\.S\. Markets (.*?)<',
+    'pattern': '>U\.S\. Markets (.*?)<',
 }
 
 
@@ -147,7 +159,8 @@ def _get_data(symbol,
               close=None,
               pattern=None,
               mapping=None,
-              header=True):
+              header=True,
+              cookies={}):
     '''
     Returns OHLC plus extended data for a given symbol.
 
@@ -163,6 +176,7 @@ def _get_data(symbol,
     :param pattern: an optional regex pattern to strip from response
     :param mapping: maps data to labels, either positional or associative
     :param header: assume the first line of a multi-line csv is the header
+    :param cookies: to pass along with the request
     :type symbol: `str`
     :type source: `str`
     :type format: `str`
@@ -171,6 +185,7 @@ def _get_data(symbol,
     :type pattern: `str` (default=None)
     :type mapping: `list` or `dict` (default=None)
     :type header: `bool` (default=True)
+    :type headers: `dict` or `RequestsCookieJar`
 
     .. warning:: pattern and multi-line csv are mutually exclusive
 
@@ -181,29 +196,25 @@ def _get_data(symbol,
     .. warning:: json data elements must be `dict` types
     '''
 
-    # read lines from URL (http(s) or file); returns list of lines or exception
-    source = source % quote_plus(symbol) if symbol else source
-    data = urlopen(source).readlines()
+    source = source % symbol if symbol else source
+    data = get(source, cookies=cookies).text
 
     # strip regex pattern if passed
     if pattern:
 
-        # collapse data list before applying regex
-        data = re.compile(pattern, re.DOTALL).search(''.join(data))
-
-        # extract matched pattern or raise exception
-        data = data.group(1) if data.group else None
-        if not data:  # pragma: no cover
-            raise DataError('regex on data failed to produce a result')
+        r = re.search(pattern, data, re.DOTALL)
+        data = r.group(1) if r else data
 
     # csv format: yield each line as a MarketData object with clean dt
     if format == 'csv':
 
-        # if header, assume first line of multi-line list is the header
-        if header and len(data) > 1:
-            data.pop(0)
+        # convert data into an object csv.reader can handle
+        data = StringIO(data)
 
-        for row in csv.reader(data):
+        for i, row in enumerate(csv.reader(data)):
+
+            if header and i == 0:
+                continue
 
             if len(row) != len(mapping):  # pragma: no cover
                 raise DataError('csv row length does not match mapping')
@@ -250,6 +261,7 @@ def get_yahoo_quote(symbol):
         _YAHOO_QUOTE['tz'],
         _YAHOO_QUOTE['close'],
         mapping=_YAHOO_QUOTE['mapping'],
+        header=_YAHOO_QUOTE['header'],
     ))
 
 
@@ -263,13 +275,22 @@ def get_yahoo_hist(symbol):
     :type symbol: `str`
     '''
 
+    # get crumb and cookies from referrer
+    res = get(_YAHOO_HIST['ref_source'] % symbol)
+    rgx = re.search(_YAHOO_HIST['ref_pattern'], res.text)
+    crumb = rgx.group(1) if rgx else ''
+
+    # inject crumb into source
+    source = _YAHOO_HIST['source'] % ('%s', crumb)
+
     return _get_data(
         symbol,
-        _YAHOO_HIST['source'],
+        source,
         _YAHOO_HIST['format'],
         _YAHOO_HIST['tz'],
         _YAHOO_HIST['close'],
         mapping=_YAHOO_HIST['mapping'],
+        cookies=res.cookies,
     )
 
 #    return pd.DataFrame(d).T

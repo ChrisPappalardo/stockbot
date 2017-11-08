@@ -10,6 +10,13 @@ stockbot S&P500 directional movement and oscillator trading system using adx
 ###############################################################################
 
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 from logbook import Logger
 
 from stockbot.algo.core import (

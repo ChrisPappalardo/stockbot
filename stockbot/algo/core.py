@@ -10,6 +10,13 @@ core functions and objects for stockbot trading algorithms
 ###############################################################################
 
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 from mock import Mock
 from talib.abstract import (
     PLUS_DI,
@@ -20,7 +27,7 @@ from zipline.api import (
     order_percent,
 )
 
-import stockbot.portfolio as sbp
+from stockbot import portfolio as sbp
 
 
 def adx_init(context,

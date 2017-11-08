@@ -10,6 +10,13 @@ Portfolio class for analyzing instruments as a group
 ###############################################################################
 
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 from mock import Mock
 from pandas import Timestamp
 from numpy import isnan
