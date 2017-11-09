@@ -1,5 +1,5 @@
 ===============================
-stockbot
+Stockbot
 ===============================
 
 .. image:: https://img.shields.io/travis/ChrisPappalardo/stockbot.svg
@@ -12,8 +12,10 @@ stockbot
 Stock market analysis library written in Python.
 
 * Copyright (C) 2016 by Chris Pappalardo <cpappala@yahoo.com>
-* License: Creative Commons (CC) BY-NC-ND 4.0 https://creativecommons.org/licenses/by-nc-nd/4.0/
+* License: `Creative Commons (CC) BY-NC-ND 4.0
+<https://creativecommons.org/licenses/by-nc-nd/4.0/>`_
 * Documentation: https://stockbot-lib.readthedocs.org/
+
 
 Features
 --------
@@ -24,6 +26,7 @@ Features
 * Average Directional Movement Index (ADX) ranking for portfolios
 * Trending and oscillating instrument trading algorithms for zipline
 
+
 Installation
 ------------
 
@@ -31,27 +34,32 @@ Install the latest package with::
 
   $ pip install stockbot
 
-The dependencies are not trivial and may not install properly on your system through pip.  We
-recommend developing and deploying your projects that use stockbot in containers with the necessary
+The dependencies are not trivial and may not install properly on your system
+through pip.  We recommend developing and deploying your projects that use
+Stockbot in `Docker <http://www.docker.com>`_ containers with the necessary
 packages pre-installed.
 
-One way to do this is to first build the `quantopian/zipline` Docker image with the following command::
+To do this, first build the `quantopian/zipline` Docker image using version
+`1.1.1` of the source code with the following command::
 
-  $ docker build -t quantopian/zipline https://github.com/quantopian/zipline.git
+  $ docker build -t quantopian/zipline https://github.com/quantopian/zipline.git#1.1.1
 
-Using a docker-compose development configuration similar to the one contained in stockbot, you could
-then create a development container and install the latest quandl bundle with::
+Then use a docker-compose configuration similar to Stockbot's production cluster
+[here](docker-compose.yml).  Build your containers with::
 
-  $ docker-compose -f docker-compose-dev.yml up
+  $ docker-compose build
 
-Note that our docker configuration installs the latest zipline `quantopian-quandl` bundle in the project
-root.  This is necessary for the default stockbot configuration when using functions such as
-`get_zipline_dp` and `get_zipline_hist`.
+To run Stockbot's trading algorithms in zipline and to use certain functions,
+you will need to download a `quantopian-quandl` bundle::
+
+  $ docker-compose run --rm stockbot zipline ingest -b quantopian-quandl
+
 
 Usage
 -----
 
-Stockbot can provide you with a list of S&P500 stocks from `wikipedia`::
+Stockbot can provide you with a list of S&P500 stocks from 
+`Wikipedia <https://en.wikipedia.org/wiki/List_of_S%26P_500_companies>`_::
 
    >>> from stockbot.core import get_sp500_list
    >>> get_sp500_list()
@@ -69,10 +77,11 @@ Or a real-time quote from CNBC using `get_cnbc_quote`::
    >>> next(get_cnbc_quote('YHOO'))
    {'volume': 3528566, 'last': 41.04, 'symbol': u'YHOO', 'datetime': datetime.datetime(2016, 11, 22, 21, 0, tzinfo=<UTC>), 'high': 41.395, 'low': 40.83, 'open': 41.2, 'change': -0.07}
 
-Note:: `get_cnbc_quote` returns a generator
+Note:: `get_cnbc_quote` returns a generator.
 
-Stockbot returns quote data using a `dict` like object `stockbot.marketdata.MarketData` that performs
-certain data and datetime processing.
+Stockbot returns quote data using a `dict` like object
+`stockbot.marketdata.MarketData` that performs certain data and datetime
+processing.
 
 Historical data can be obtained from Yahoo! using `get_yahoo_hist`::
      
@@ -80,18 +89,22 @@ Historical data can be obtained from Yahoo! using `get_yahoo_hist`::
    >>> get_yahoo_hist('YHOO')
    {'high': 41.48, 'last': 41.110001, 'datetime': datetime.datetime(2016, 11, 21, 21, 0, tzinfo=<UTC>), 'volume': 11338000, 'low': 40.939999, 'close': 41.110001, 'open': 41.439999}
    
-Historical data can also be obtained from zipline bundles using the `get_zipline_hist` function::
+Historical data can also be obtained from zipline bundles using the
+`get_zipline_hist` function::
 
    >>> from stockbot.sources import get_zipline_hist
-   >>> get_zipline_hist('YHOO', 'close', 
+   >>> get_zipline_hist('YHOO', 'close', datetime.datetime(...))
    2016-01-04 00:00:00+00:00    31.41
    Freq: C, Name: Equity(3177 [YHOO]), dtype: float64
 
-Look up symbols with `stockbot.sources.get_symbol` which searches Yahoo! finance for the passed term.
+Look up symbols with `stockbot.sources.get_symbol` which searches Yahoo!
+finance for the passed term.
 
-Zipline trading algorithms that utilize the Directional Movement technical indicator system are provided in 
-`stockbot.algo`.  For example, the following zipline trading algorithm would use ADX and DI to trade the
-top trending stocks and Stochastic Oscillators to trade the top oscillating stocks in the S&P 500 index::
+Zipline trading algorithms that utilize the Directional Movement technical
+indicator system are provided in `stockbot.algo`.  For example, the following
+zipline trading algorithm would use ADX and DI to trade the top trending
+stocks and Stochastic Oscillators to trade the top oscillating stocks in the
+S&P 500 index::
 
    from logbook import Logger
    from stockbot.algo.core import (
@@ -137,9 +150,10 @@ top trending stocks and Stochastic Oscillators to trade the top oscillating stoc
            log=context.adx['log'],
        )
 
-To run this algorithm in a docker container, copy the code above into a file and issue the following::
+To run this algorithm in a docker container, copy the code above into a file
+and issue the following::
 
-  $ zipline run -f <file> --start <date> --end <date>
+  $ docker-compose run --rm stockbot zipline run -f <file> --start <date> --end <date>
 
-Use the the `<YYYY-M-D>` format for dates.  Use `-o /path/file.pickle` to capture pickled results that
-can be used in python.
+Use the the `<YYYY-M-D>` format for dates.  Use `-o /path/file.pickle` to
+capture pickled results that can be used in python.

@@ -10,7 +10,7 @@ Tests `portfolio` module.
 import unittest
 
 from logbook import Logger
-from mock import (Mock, patch)
+from mock import patch
 from numpy import (nan, random)
 from pandas import (Series, Timestamp)
 from zipline.errors import SymbolNotFound
@@ -45,11 +45,11 @@ class TestPortfolio(unittest.TestCase):
 
         a = Portfolio('GE', log=Logger('test'))
 
-        b = Series([random.rand()*10 for i in range(0, 28)])
+        b = Series([random.rand() * 10 for i in range(0, 28)])
         mock_get_zipline_hist.return_value = b
         self.assertTrue(a.adx_rank(Timestamp.utcnow()))
 
-        b = Series([random.rand()*10 for i in range(0, 27)])
+        b = Series([random.rand() * 10 for i in range(0, 27)])
         mock_get_zipline_hist.return_value = b
         self.assertEqual(a.adx_rank(Timestamp.utcnow()), [])
 

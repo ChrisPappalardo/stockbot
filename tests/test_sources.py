@@ -11,14 +11,12 @@ import datetime as dt
 import unittest
 
 from mock import (patch, Mock)
-import numpy
 from pandas import (Series, Timestamp)
 import pytz
 from zipline.data.data_portal import DataPortal
 
 from stockbot.sources import (
     DataError,
-    _get_data,
     get_yahoo_quote,
     get_yahoo_hist,
     get_cnbc_quote,

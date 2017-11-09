@@ -29,8 +29,7 @@ requirements = [
 ]
 
 test_requirements = [
-    'mock',
-    'tox',
+    # put additional packages required by *unit* tests here
 ]
 
 setup(

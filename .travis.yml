@@ -13,8 +13,10 @@ script:
   - >
     travis_wait 40
     docker-compose -f docker-compose-test.yml run --rm stockbot
+    zipline ingest -b quantopian-quandl ; 
     tox -e py27
   - >
     travis_wait 40
     docker-compose -f docker-compose-test.yml run --rm stockbot
+    zipline ingest -b quantopian-quandl ; 
     tox -e py35

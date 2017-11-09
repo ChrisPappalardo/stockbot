@@ -1,12 +1,12 @@
 # base requirements for all environments
-beautifulsoup4>=4.5.1
+beautifulsoup4>=4.6.0
 future>=0.16.0
 mock>=2.0.0
-numpy>=1.11.2
-pandas>=0.16.1
-python-dateutil>=2.4.2
-pytz>=2015.6
-requests>=2.11.1
-six>=1.10.0
+numpy>=1.13.3
+pandas==0.18.1
+python-dateutil>=2.6.1
+pytz>=2017.3
+requests>=2.18.4
+six>=1.11.0
 TA-lib>=0.4.10
-zipline>=1.0.2
+zipline==1.1.1

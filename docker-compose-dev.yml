@@ -9,7 +9,6 @@ services:
       context: .
       dockerfile: ./compose/stockbot/Dockerfile-dev
     image: cpappalardo/stockbot:dev
-    command: zipline ingest -b quantopian-quandl
     volumes:
       - .:/app
       - zipline_data_dev:/root/.zipline

@@ -1,6 +1,6 @@
 # include the base.txt requirements file
 -r base.txt
 
-# additional test requirements
+# additional unit test *and* testing environment requirements
 mock>=2.0.0
 tox>=2.3.1

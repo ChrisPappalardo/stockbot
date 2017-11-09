@@ -11,7 +11,6 @@ import datetime as dt
 from decimal import Decimal
 import unittest
 
-from dateutil.tz import tzlocal
 import pytz
 
 from stockbot.marketdata import MarketData

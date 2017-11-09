@@ -51,7 +51,8 @@ clean-docker:
 	-docker images --quiet | xargs docker rmi --force 2>/dev/null || true
 
 lint:
-	flake8 stockbot tests
+	flake8 stockbot
+	flake8 --ignore E501,E731 tests  # ignore long lines and lambdas
 
 test:
 	python setup.py test
