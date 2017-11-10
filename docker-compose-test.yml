@@ -1,8 +1,13 @@
 version: '2'
 
+volumes:
+  zipline_data_test: {}
+
 services:
   stockbot:
     build:
       context: .
       dockerfile: ./compose/stockbot/Dockerfile
     image: cpappalardo/stockbot:test
+    volumes:
+      - zipline_data_test:/root/.zipline
