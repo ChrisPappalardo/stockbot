@@ -82,8 +82,8 @@ _YAHOO_HIST = {
         'high',
         'low',
         'close',
+        'last',
         'volume',
-        'last'
     ],
 }
 

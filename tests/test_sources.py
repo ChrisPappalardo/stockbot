@@ -55,7 +55,7 @@ class TestSources(unittest.TestCase):
 
     @patch('stockbot.sources.get')
     def test_get_yahoo_hist(self, mock_get):
-        _in = 'Date,Open,High,Low,Close,Volume,Adj Close\n2015-09-30,190.369995,191.830002,189.440002,191.589996,152593200,191.589996\n'
+        _in = 'Date,Open,High,Low,Close,Adj Close,Volume\n2015-09-30,190.369995,191.830002,189.440002,191.589996,191.589996,152593200\n'
         out_labels = ['open', 'high', 'low', 'close', 'volume', 'last', 'datetime']
         out_values = [
             190.369995, 191.830002, 189.440002, 191.589996, 152593200, 191.589996,
