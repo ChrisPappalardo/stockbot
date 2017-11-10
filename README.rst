@@ -11,9 +11,8 @@ Stockbot
 
 Stock market analysis library written in Python.
 
-* Copyright (C) 2016 by Chris Pappalardo <cpappala@yahoo.com>
-* License: `Creative Commons (CC) BY-NC-ND 4.0
-<https://creativecommons.org/licenses/by-nc-nd/4.0/>`_
+* Copyright (C) 2016-2017 by Chris Pappalardo <cpappala@yahoo.com>
+* License: `Creative Commons (CC) BY-NC-ND 4.0 <https://creativecommons.org/licenses/by-nc-nd/4.0/>`_
 * Documentation: https://stockbot-lib.readthedocs.org/
 
 
@@ -45,7 +44,7 @@ To do this, first build the `quantopian/zipline` Docker image using version
   $ docker build -t quantopian/zipline https://github.com/quantopian/zipline.git#1.1.1
 
 Then use a docker-compose configuration similar to Stockbot's production cluster
-[here](docker-compose.yml).  Build your containers with::
+`here <docker-compose.yml>`_.  Build your containers with::
 
   $ docker-compose build
 

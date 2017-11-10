@@ -11,32 +11,32 @@ Subpackages
 Submodules
 ----------
 
-stockbot.core module
---------------------
+stockbot\.core module
+---------------------
 
 .. automodule:: stockbot.core
     :members:
     :undoc-members:
     :show-inheritance:
 
-stockbot.marketdata module
---------------------------
+stockbot\.marketdata module
+---------------------------
 
 .. automodule:: stockbot.marketdata
     :members:
     :undoc-members:
     :show-inheritance:
 
-stockbot.portfolio module
--------------------------
+stockbot\.portfolio module
+--------------------------
 
 .. automodule:: stockbot.portfolio
     :members:
     :undoc-members:
     :show-inheritance:
 
-stockbot.sources module
------------------------
+stockbot\.sources module
+------------------------
 
 .. automodule:: stockbot.sources
     :members:
