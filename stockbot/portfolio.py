@@ -83,13 +83,14 @@ class Portfolio(object):
     def __repr__(self):
         return self.portfolio.__repr__()
 
-    def adx_rank(self, asof=None, bar_count=28):
+    def adx_rank(self, asof=None, bar_count=28, fillna=None):
         '''
         returns `Portfolio` object instruments ordered by descending ADX rating
 
         :rtype: `list` of `tuple` objects
         :param asof: as-of date
         :param bar_count: ADX calculation window
+        :param fillna: call fillna with this method on input objs
         :type asof: `datetime.datetime` type object (default=now)
         :type bar_count: `int`
         '''
@@ -98,25 +99,38 @@ class Portfolio(object):
         result = dict()
 
         for i in self.portfolio:
+
             f = get_zipline_hist
             b = self.bundle
             c = self.calendar
             dp = self.dataportal
+
             input = {
                 'high': f(i, 'high', asof, bar_count, '1d', 'daily', b, c, dp),
                 'low': f(i, 'low', asof, bar_count, '1d', 'daily', b, c, dp),
                 'close': f(i, 'close', asof, bar_count, '1d', 'daily', b, c, dp), # noqa
             }
-            # set ADX or log that we don't have data
+
+            if fillna:
+                for k in input.keys():
+                    input[k].fillna(method=fillna, inplace=True)
+
             try:
+
                 adx = ADX(input)[-1]
+
                 if isnan(adx):
                     self.log.warn('adx for %s on %s is NaN' % (i.symbol, asof))
+                    self.log.debug(input)
+
                 else:
                     result[i] = ADX(input)[-1]
+
             except Exception as e:
+
                 if 'inputs are all NaN' in str(e):
                     self.log.warn('NaN inputs for %s on %s' % (i.symbol, asof))
+
                 else:  # pragma: no cover
                     raise
 

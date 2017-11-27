@@ -36,6 +36,7 @@ def initialize(context):
         di_window=14,
         symbols=get_sp500_list(),
         log=Logger('Stockbot'),
+        fillna='ffill',
     )
 
 

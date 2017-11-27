@@ -36,7 +36,9 @@ def adx_init(context,
              bot_rank=5,
              di_window=14,
              symbols=None,
-             log=None):
+             log=None,
+             fillna=None,
+):
     '''
     zipline trading algorithm initialization that ranks portfolio using ADX
     and then stores the top trending and oscillating instruments in the context
@@ -48,6 +50,7 @@ def adx_init(context,
     :param di_window: the base DI window period (ADX window is * 2)
     :param symbols: the symbols to inlcude in portfolio
     :param log: log to use for adx ranking
+    :param fillna: fillna method to use on data
     :type context: `zipline.algorithm.TradingAlgorithm`
     :type name: `str`
     :type top_rank: `int`
@@ -55,6 +58,7 @@ def adx_init(context,
     :type di_window: `int`
     :type symbols: `list` of `str`
     :type log: `logbook.Logger`
+    :type fillna: `str`
     '''
 
     # create iteration cursor
@@ -68,6 +72,7 @@ def adx_init(context,
         'di_window': di_window,
         'symbols': list() if symbols is None else symbols,
         'log': Mock() if log is None else log,
+        'fillna': fillna,
     }
     c = context.adx
 
@@ -75,7 +80,7 @@ def adx_init(context,
     try:
         c['port'] = sbp.Portfolio(*c['symbols'], log=c['log'])
         e = context.sim_params.end_session
-        c['rank'] = c['port'].adx_rank(e, c['di_window']*2)
+        c['rank'] = c['port'].adx_rank(e, c['di_window']*2, c['fillna'])
         c['top'] = c['rank'][:c['top_rank']]
         c['bot'] = c['rank'][-c['bot_rank']:]
     except Exception as e:
@@ -132,12 +137,17 @@ def trade_di(context,
     # step through each instrument
     for i in portfolio:
 
-        # calculate plus and minus directional movement indicators
         input = {
             'high': data.history(i, 'high', window + 1, '1d'),
             'low': data.history(i, 'low', window + 1, '1d'),
             'close': data.history(i, 'close', window + 1, '1d'),
         }
+
+        if context.adx['fillna']:
+            for k in input.keys():
+                input[k].fillna(method=context.adx['fillna'], inplace=True)
+
+        # calculate plus and minus directional movement indicators
         (plus_di, minus_di) = (PLUS_DI(input), MINUS_DI(input))
 
         p = context.portfolio.positions
@@ -194,12 +204,17 @@ def trade_so(context,
     # step through each instrument
     for i in portfolio:
 
-        # calculate plus and minus directional movement indicators
         input = {
             'high': data.history(i, 'high', window + 4, '1d'),
             'low': data.history(i, 'low', window + 4, '1d'),
             'close': data.history(i, 'close', window + 4, '1d'),
         }
+
+        if context.adx['fillna']:
+            for k in input.keys():
+                input[k].fillna(method=context.adx['fillna'], inplace=True)
+
+        # calculate plus and minus directional movement indicators
         STOCH.set_parameters({'fastk_period': window})
         (so_k, so_d) = STOCH(input)
 
