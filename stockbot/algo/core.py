@@ -37,8 +37,7 @@ def adx_init(context,
              di_window=14,
              symbols=None,
              log=None,
-             fillna=None,
-):
+             fillna=None):
     '''
     zipline trading algorithm initialization that ranks portfolio using ADX
     and then stores the top trending and oscillating instruments in the context

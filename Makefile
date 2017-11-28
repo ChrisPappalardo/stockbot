@@ -52,7 +52,7 @@ clean-docker:
 
 lint:
 	flake8 stockbot
-	flake8 --ignore E501,E731 tests  # ignore long lines and lambdas
+	flake8 --ignore E731 --exclude test_*.py tests  # ignore lambdas and UTs
 
 test:
 	python setup.py test

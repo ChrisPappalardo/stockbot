@@ -89,11 +89,11 @@ _YAHOO_HIST = {
 
 
 _CNBC_QUOTE = {
-    'source': 'http://data.cnbc.com/quotes/%s',
+    'source': 'http://quote.cnbc.com/quote-html-webservice/quote.htm?output=json&symbols=%s',  # noqa
     'format': 'json',
     'tz': 'America/New_York',
     'close': parse('4:00pm'),
-    'pattern': 'var quoteDataObj = (\[{.*?}\])',
+    'pattern': '{"QuickQuoteResult":{"QuickQuote":({.*}),".+?":".*?",".+?":".*?"}',  # noqa
     'mapping': {
         'symbol': 'symbol',
         'last': 'last',
@@ -102,6 +102,7 @@ _CNBC_QUOTE = {
         'high': 'high',
         'low': 'low',
         'volume': 'volume',
+        'time': 'last_time',
     },
 }
 
