@@ -38,10 +38,10 @@ through pip.  We recommend developing and deploying your projects that use
 Stockbot in `Docker <http://www.docker.com>`_ containers with the necessary
 packages pre-installed.
 
-To do this, first build the `quantopian/zipline` Docker image using version
-`1.1.1` of the source code with the following command::
+To do this, first build the `quantopian/zipline` Docker image with the
+following command::
 
-  $ docker build -t quantopian/zipline https://github.com/quantopian/zipline.git#1.1.1
+  $ docker build -t quantopian/zipline https://github.com/quantopian/zipline.git
 
 Then use a docker-compose configuration similar to Stockbot's production cluster
 `here <docker-compose.yml>`_.  Build your containers with::
