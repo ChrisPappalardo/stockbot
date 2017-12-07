@@ -1,0 +1,3 @@
+*.rst linguist-documentation
+docs/* linguist-documentation
+tests/data/* linguist-generated

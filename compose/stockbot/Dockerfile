@@ -13,8 +13,9 @@ RUN apt-get update \
 # configure apt-utils (fixes warnings)
 RUN dpkg-reconfigure apt-utils
 
-# install package and tox
+# install requirements, package, and tox
 COPY . /app
+RUN pip install -r /app/requirements/base.txt
 RUN pip install /app
 RUN pip install tox
 
