@@ -9,6 +9,8 @@ services:
       context: .
       dockerfile: ./compose/stockbot/Dockerfile-dev
     image: cpappalardo/stockbot:dev
+    network_mode: "host"
     volumes:
       - .:/app
       - zipline_data_dev:/root/.zipline
+      - ~/.Xauthority:/root/.Xauthority:rw # run --rm -e DISPLAY=$DISPLAY
