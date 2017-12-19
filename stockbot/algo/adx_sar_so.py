@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 '''
-adx_di_so
----------
+adx_sar_so
+----------
 
-stockbot S&P500 directional movement and oscillator trading system using adx
+stockbot sp500 parabolic sar and oscillator trading system using adx
 '''
 
 from __future__ import (
@@ -19,7 +19,7 @@ from logbook import Logger
 from stockbot.algo.core import (
     init,
     adx_rank,
-    trade_di,
+    trade_sar,
     trade_so,
 )
 from stockbot.core import get_sp500_list
@@ -28,7 +28,7 @@ from stockbot.core import get_sp500_list
 def initialize(context):
     return init(
         context,
-        name='adx_di_so',
+        name='adx_sar_so',
         symbols=get_sp500_list(),
         capital_ppt=1.0/(5.0 + 5.0),
         fillna='bfill',
@@ -37,6 +37,8 @@ def initialize(context):
         top_rank=5,
         bot_rank=5,
         di_window=14,
+        accel=0.02,
+        accel_max=0.2,
         so_window=14,
         top=[],
         bot=[],
@@ -58,15 +60,16 @@ def handle_data(context, data):
         di_window=context.sbot['di_window'],
     )
 
-    # trade trending S&P500 stocks using the DI system
-    trade_di(
+    # trade trending S&P500 stocks using parabolic stop-and-reverse points
+    trade_sar(
         context,
         data,
         t_symbols=[s for (s, adx) in context.sbot['top']],
-        di_window=context.sbot['di_window'],
+        accel=context.sbot['accel'],
+        accel_max=context.sbot['accel_max'],
     )
 
-    # trade oscillating S&P500 stocks using the SO system
+    # trade oscillating S&P500 stocks using stochastic oscillators
     trade_so(
         context,
         data,
