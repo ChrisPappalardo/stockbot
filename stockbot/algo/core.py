@@ -117,10 +117,10 @@ def init(context,
     context.sbot = {
         'name': name,
         'symbols': [symbol(s) for s in symbols],
-        'capital_ppt': 1.0 / len(symbols),
+        'capital_ppt': capital_ppt,
         'fillna': fillna,
         'fillna_limit': fillna_limit,
-        'log': Mock() if log is None else log,
+        'log': log,
     }
     context.sbot.update(kwargs)
 
