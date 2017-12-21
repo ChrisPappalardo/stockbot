@@ -103,20 +103,22 @@ def init(context,
     log = Mock() if log is None else log
 
     # validate symbols
+    v_symbols = list()
+
     for s in symbols:
         try:
-            symbol(s)
+            v_symbols.append(symbol(s))
+
         except SymbolNotFound as e:
-            symbols.remove(s)
             log.warning('%s not found, removed' % s)
 
     # initialize capital_ppt
-    capital_ppt = 1.0 / len(symbols) if not capital_ppt else capital_ppt
+    capital_ppt = 1.0 / len(v_symbols) if not capital_ppt else capital_ppt
 
     # store config
     context.sbot = {
         'name': name,
-        'symbols': [symbol(s) for s in symbols],
+        'symbols': v_symbols,
         'capital_ppt': capital_ppt,
         'fillna': fillna,
         'fillna_limit': fillna_limit,
