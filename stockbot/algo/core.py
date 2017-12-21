@@ -27,6 +27,7 @@ from zipline.api import (
     order_percent,
     symbol,
 )
+from zipline.errors import SymbolNotFound
 
 
 def _get_data(data,
@@ -70,7 +71,7 @@ def _get_data(data,
 def init(context,
          name,
          symbols,
-         capital_ppt,
+         capital_ppt=None,
          fillna=None,
          fillna_limit=0.34,
          log=None,
@@ -97,6 +98,20 @@ def init(context,
 
     # create iteration cursor
     context.i = 0
+
+    # initialize log
+    log = Mock() if log is None else log
+
+    # validate symbols
+    for s in symbols:
+        try:
+            symbol(s)
+        except SymbolNotFound as e:
+            symbols.remove(s)
+            log.warning('%s not found, removed' % s)
+
+    # initialize capital_ppt
+    capital_ppt = 1.0 / len(symbols) if not capital_ppt else capital_ppt
 
     # store config
     context.sbot = {
