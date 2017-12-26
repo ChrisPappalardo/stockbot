@@ -42,6 +42,7 @@ def initialize(context):
         so_window=14,
         top=[],
         bot=[],
+        rank_every=7,
     )
 
 
@@ -50,17 +51,19 @@ def handle_data(context, data):
     context.i += 1
     context.sbot['log'].info('processing %s' % context.get_datetime())
 
-    # rank S&P500 stocks for the current iteration
-    adx_rank(
-        context,
-        data,
-        symbols=context.sbot['symbols'],
-        top_rank=context.sbot['top_rank'],
-        bot_rank=context.sbot['bot_rank'],
-        di_window=context.sbot['di_window'],
-    )
+    # rank S&P500 stocks if this is a rank iteration
+    # subtract 1 from i so first iteration produces a ranking
+    if (context.i - 1) / context.sbot['rank_every'] % 1 == 0.0:
+        adx_rank(
+            context,
+            data,
+            symbols=context.sbot['symbols'],
+            top_rank=context.sbot['top_rank'],
+            bot_rank=context.sbot['bot_rank'],
+            di_window=context.sbot['di_window'],
+        )
 
-    # trade trending S&P500 stocks using parabolic stop-and-reverse points
+    # trade trending S&P500 stocks using parabolic SAR points
     trade_sar(
         context,
         data,

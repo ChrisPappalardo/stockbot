@@ -221,8 +221,8 @@ def trade_di(context,
              t_symbols,
              di_window=14):
     '''
-    zipline trading algorithm that uses the Directional Indicator system for
-    trending instruments
+    zipline trading algorithm that uses the Directional Indicator system
+    for trending instruments
 
     :param context: the context for the trading system
     :param data: data for the trading system
@@ -299,8 +299,8 @@ def trade_sar(context,
               accel=0.02,
               accel_max=0.2):
     '''
-    zipline trading algorithm that uses parabolic Stop-And-Reverse points for
-    trending instruments
+    zipline trading algorithm that uses parabolic Stop-And-Reverse points
+    for trending instruments
 
     :param context: the context for the trading system
     :param data: data for the trading system
@@ -372,8 +372,8 @@ def trade_so(context,
              o_symbols,
              so_window=14):
     '''
-    zipline trading algorithm that uses the Stochastic Oscillator system for
-    oscillating instruments
+    zipline trading algorithm that uses the Stochastic Oscillator system
+    for oscillating instruments
 
     :param context: the context for the trading system
     :param data: data for the trading system

@@ -10,4 +10,4 @@ pytz>=2017.3
 requests>=2.18.4
 six>=1.11.0
 TA-lib>=0.4.10
--e git+https://github.com/ChrisPappalardo/zipline.git@43dced33#egg=zipline
+-e git+https://github.com/quantopian/zipline.git@e4f555f#egg=zipline
