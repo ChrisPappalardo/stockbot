@@ -16,6 +16,8 @@ from zipline.utils.calendars import get_calendar
 from zipline.utils.run_algo import run_algorithm
 
 from stockbot.algo.core import init
+import stockbot.algo.adx_di_so as adx_di_so
+import stockbot.algo.adx_sar_so as adx_sar_so
 
 
 class TestCore(unittest.TestCase):
@@ -74,6 +76,40 @@ class TestCore(unittest.TestCase):
             self.context.sbot['capital_ppt'],
             1.0 / len(self.context.sbot['symbols']),
         )
+
+    def test_adx_di_so(self):
+        '''
+        ensure adx_di_so trading system runs without exceptions
+        '''
+
+        end = get_calendar('NYSE').previous_close(Timestamp.utcnow())
+        start = get_calendar('NYSE').previous_close(end - DateOffset(months=2))
+
+        res = run_algorithm(
+            start=start,
+            end=end,
+            initialize=adx_di_so.initialize,
+            handle_data=adx_di_so.handle_data,
+            capital_base=float('1.0e5'),
+        )
+        self.assertNotEqual(res['alpha'][-1], 0.0)
+
+    def test_adx_sar_so(self):
+        '''
+        ensure adx_sar_so trading system runs without exceptions
+        '''
+
+        end = get_calendar('NYSE').previous_close(Timestamp.utcnow())
+        start = get_calendar('NYSE').previous_close(end - DateOffset(months=2))
+
+        res = run_algorithm(
+            start=start,
+            end=end,
+            initialize=adx_sar_so.initialize,
+            handle_data=adx_sar_so.handle_data,
+            capital_base=float('1.0e5'),
+        )
+        self.assertNotEqual(res['alpha'][-1], 0.0)
 
     def tearDown(self):
         pass

@@ -66,6 +66,7 @@ def handle_data(context, data):
         context,
         data,
         t_symbols=[s for (s, adx) in context.sbot['top']],
+        max_pos=(context.sbot['top_rank'] + context.sbot['bot_rank']),
         di_window=context.sbot['di_window'],
     )
 
@@ -74,5 +75,6 @@ def handle_data(context, data):
         context,
         data,
         o_symbols=[s for (s, adx) in context.sbot['bot']],
+        max_pos=(context.sbot['top_rank'] + context.sbot['bot_rank']),
         so_window=context.sbot['so_window'],
     )

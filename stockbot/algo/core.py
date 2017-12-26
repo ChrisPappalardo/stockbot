@@ -24,7 +24,7 @@ from talib import (
     STOCH,
 )
 from zipline.api import (
-    order_percent,
+    order_target_percent,
     symbol,
 )
 from zipline.errors import SymbolNotFound
@@ -66,6 +66,45 @@ def _get_data(data,
         input[k].fillna(method=fillna, inplace=True)
 
     return input
+
+
+def _get_order_target(symbol,
+                      order_type,
+                      symbols,
+                      positions,
+                      capital_ppt):
+    '''
+    determine the proper order target percent
+
+    :param symbol: the instrument
+    :param order_type: the direction of the order target, e.g. 'long'
+    :param symbols: the universe of instruments
+    :param positions: the current portfolio
+    :param capital_ppt: the capital % target per instrument
+    :type symbol: `zipline.assets.Equity`
+    :type order_type: `str`
+    :type symbols: `list` of `zipline.assets.Equity`
+    :type positions: `list` of positions
+    :type capital_ppt: `float`
+    '''
+
+    # if symbol is in current positions, get amount, else 0
+    position = getattr(positions.get(symbol, object()), 'amount', 0)
+
+    # criteria for closing out an existing position that is no longer traded
+    short_cover = [order_type is 'long', symbol not in symbols, position < 0]
+    long_sell = [order_type is 'short', symbol not in symbols, position > 0]
+
+    # positions to close
+    if all(short_cover) or all(long_sell) or order_type is 'close':
+        return 0.0
+
+    # long orders go long
+    elif order_type is 'long':
+        return capital_ppt
+
+    # otherwise go short
+    return -capital_ppt
 
 
 def init(context,
@@ -213,12 +252,13 @@ def adx_rank(context,
     c['bot'] = c['rank'][-c['bot_rank']:]
 
     v = (c['top_rank'], c['top'], c['bot_rank'], c['bot'])
-    c['log'].debug('set top %s %s and bot %s %s' % v)
+    c['log'].info('ranked top %s %s and bot %s %s' % v)
 
 
 def trade_di(context,
              data,
              t_symbols,
+             max_pos,
              di_window=14):
     '''
     zipline trading algorithm that uses the Directional Indicator system
@@ -227,10 +267,12 @@ def trade_di(context,
     :param context: the context for the trading system
     :param data: data for the trading system
     :param t_symbols: trending instrument symbols
+    :param max_pos: maximum number of positions to hold
     :param di_window: the base DI window period (ADX window is * 2)
     :type context: `zipline.algorithm.TradingAlgorithm`
     :type data: `zipline.data.data_portal.DataPortal`
     :type t_symbols: `list` of ...
+    :type max_pos: `int`
     :type di_window: `int`
 
     expects the following in `context`:
@@ -243,12 +285,13 @@ def trade_di(context,
     '''
 
     c = context.sbot
+    p = context.portfolio.positions
 
     # ensure we have enough history
     if context.i < di_window + 1:
         return
 
-    for s in t_symbols:
+    for s in (list(p) + t_symbols)[:max_pos]:
 
         input = _get_data(
             data,
@@ -277,25 +320,29 @@ def trade_di(context,
             timeperiod=di_window,
         )
 
-        p = context.portfolio.positions
-        v = (s.symbol, plus_di[-1], minus_di[-1])
-
-        # go long if plus directional movement is greater
+        # set order type
         if plus_di[-1] > minus_di[-1]:
-            if (s not in p) or (s in p and p[s].amount <= 0):
-                c['log'].info('long %s (+DI %s >= -DI %s)' % v)
-                order_percent(s, c['capital_ppt'])
-
-        # go short if minus directional movement is greater
+            order_type = 'long'
         elif plus_di[-1] < minus_di[-1]:
-            if (s not in p) or (s in p and p[s].amount >= 0):
-                c['log'].info('short %s (+DI %s < -DI %s)' % v)
-                order_percent(s, -c['capital_ppt'])
+            order_type = 'short'
+        else:
+            order_type = 'close'
+
+        # place order
+        target = _get_order_target(
+            symbol=s,
+            order_type=order_type,
+            symbols=t_symbols,
+            positions=p,
+            capital_ppt=c['capital_ppt'],
+        )
+        order_target_percent(s, target)
 
 
 def trade_sar(context,
               data,
               t_symbols,
+              max_pos,
               accel=0.02,
               accel_max=0.2):
     '''
@@ -305,11 +352,13 @@ def trade_sar(context,
     :param context: the context for the trading system
     :param data: data for the trading system
     :param t_symbols: trending instrument symbols
+    :param max_pos: maximum number of positions to hold
     :param accel: the acceleration factor
     :param accel_max: the max acceleration factor
     :type context: `zipline.algorithm.TradingAlgorithm`
     :type data: `zipline.data.data_portal.DataPortal`
     :type t_symbols: `list` of ...
+    :type max_pos: `int`
     :type accel: `float`
     :type accel_max: `float`
 
@@ -323,12 +372,13 @@ def trade_sar(context,
     '''
 
     c = context.sbot
+    p = context.portfolio.positions
 
     # ensure we have enough history
     if context.i < 2:
         return
 
-    for s in t_symbols:
+    for s in (list(p) + t_symbols)[:max_pos]:
 
         input = _get_data(
             data,
@@ -351,25 +401,29 @@ def trade_sar(context,
             accel_max,
         )
 
-        p = context.portfolio.positions
-        v = (s.symbol, input['close'][-1], sars[-1])
-
-        # go long if close > sar
+        # set order type
         if input['close'][-1] > sars[-1]:
-            if (s not in p) or (s in p and p[s].amount <= 0):
-                c['log'].info('long %s (close %s > SAR %s)' % v)
-                order_percent(s, c['capital_ppt'])
-
-        # go short if close < sar
+            order_type = 'long'
         elif input['close'][-1] < sars[-1]:
-            if (s not in p) or (s in p and p[s].amount >= 0):
-                c['log'].info('short %s (close %s < SAR %s)' % v)
-                order_percent(s, -c['capital_ppt'])
+            order_type = 'short'
+        else:
+            order_type = 'close'
+
+        # place order
+        target = _get_order_target(
+            symbol=s,
+            order_type=order_type,
+            symbols=t_symbols,
+            positions=p,
+            capital_ppt=c['capital_ppt'],
+        )
+        order_target_percent(s, target)
 
 
 def trade_so(context,
              data,
              o_symbols,
+             max_pos,
              so_window=14):
     '''
     zipline trading algorithm that uses the Stochastic Oscillator system
@@ -378,10 +432,12 @@ def trade_so(context,
     :param context: the context for the trading system
     :param data: data for the trading system
     :param o_symbols: oscillating instrument symbols
+    :param max_pos: maximum number of positions to hold
     :param so_window: the SO window period
     :type context: `zipline.algorithm.TradingAlgorithm`
     :type data: `zipline.data.data_portal.DataPortal`
     :type o_symbols: `list` of ...
+    :type max_pos: `int`
     :type so_window: `int`
 
     expects the following in `context`:
@@ -394,12 +450,13 @@ def trade_so(context,
     '''
 
     c = context.sbot
+    p = context.portfolio.positions
 
     # ensure we have enough history
     if context.i < so_window + 4:
         return
 
-    for s in o_symbols:
+    for s in (list(p) + o_symbols)[:max_pos]:
 
         input = _get_data(
             data,
@@ -422,17 +479,20 @@ def trade_so(context,
             fastk_period=so_window,
         )
 
-        p = context.portfolio.positions
-        v = (s.symbol, so_k[-1], so_d[-1])
-
-        # go long if %K line crosses above %D line
+        # set order type
         if so_k[-1] > so_d[-1]:
-            if (s not in p) or (s in p and p[s].amount <= 0):
-                c['log'].info('long %s (K %s >= D %s)' % v)
-                order_percent(s, c['capital_ppt'])
-
-        # go short if %K line crosses below %D line
+            order_type = 'long'
         elif so_k[-1] < so_d[-1]:
-            if (s not in p) or (s in p and p[s].amount >= 0):
-                c['log'].info('short %s (K %s < D %s)' % v)
-                order_percent(s, -c['capital_ppt'])
+            order_type = 'short'
+        else:
+            order_type = 'close'
+
+        # place order
+        target = _get_order_target(
+            symbol=s,
+            order_type=order_type,
+            symbols=o_symbols,
+            positions=p,
+            capital_ppt=c['capital_ppt'],
+        )
+        order_target_percent(s, target)
