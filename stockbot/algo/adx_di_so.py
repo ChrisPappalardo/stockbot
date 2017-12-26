@@ -51,7 +51,7 @@ def handle_data(context, data):
 
     # rank S&P500 stocks if this is a rank iteration
     # subtract 1 from i so first iteration produces a ranking
-    if (context.i - 1) / context['rank_every'] % 1 == 0.0:
+    if (context.i - 1) / context.sbot['rank_every'] % 1 == 0.0:
         adx_rank(
             context,
             data,
