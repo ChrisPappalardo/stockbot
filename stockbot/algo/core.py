@@ -11,7 +11,6 @@ from __future__ import (
     absolute_import,
     division,
     print_function,
-#    unicode_literals,
 )
 
 from mock import Mock
@@ -162,6 +161,7 @@ def init(context,
         'fillna': fillna,
         'fillna_limit': fillna_limit,
         'log': log,
+        '_order_meta': dict(),
     }
     context.sbot.update(kwargs)
 
@@ -336,7 +336,18 @@ def trade_di(context,
             positions=p,
             capital_ppt=c['capital_ppt'],
         )
-        order_target_percent(s, target)
+        order_id = order_target_percent(s, target)
+
+        # store analytic information for order_id
+        _meta = {
+            'input': input,
+            'plus_di': PLUS_DI,
+            'minus_di': MINUS_DI,
+            'order_type': order_type,
+            'symbols': t_symbols,
+            'positions': p,
+        }
+        c['_order_meta'][order_id] = _meta
 
 
 def trade_sar(context,
@@ -417,7 +428,17 @@ def trade_sar(context,
             positions=p,
             capital_ppt=c['capital_ppt'],
         )
-        order_target_percent(s, target)
+        order_id = order_target_percent(s, target)
+
+        # store analytic information for order_id
+        _meta = {
+            'input': input,
+            'sars': sars,
+            'order_type': order_type,
+            'symbols': t_symbols,
+            'positions': p,
+        }
+        c['_order_meta'][order_id] = _meta
 
 
 def trade_so(context,
@@ -495,4 +516,15 @@ def trade_so(context,
             positions=p,
             capital_ppt=c['capital_ppt'],
         )
-        order_target_percent(s, target)
+        order_id = order_target_percent(s, target)
+
+        # store analytic information for order_id
+        _meta = {
+            'input': input,
+            'so_k': so_k,
+            'so_d': so_d,
+            'order_type': order_type,
+            'symbols': o_symbols,
+            'positions': p,
+        }
+        c['_order_meta'][order_id] = _meta
