@@ -340,7 +340,6 @@ def trade_di(context,
 
         # store analytic information for order_id
         _meta = {
-            'input': input,
             'plus_di': PLUS_DI,
             'minus_di': MINUS_DI,
             'order_type': order_type,
@@ -432,7 +431,6 @@ def trade_sar(context,
 
         # store analytic information for order_id
         _meta = {
-            'input': input,
             'sars': sars,
             'order_type': order_type,
             'symbols': t_symbols,
@@ -520,7 +518,6 @@ def trade_so(context,
 
         # store analytic information for order_id
         _meta = {
-            'input': input,
             'so_k': so_k,
             'so_d': so_d,
             'order_type': order_type,
