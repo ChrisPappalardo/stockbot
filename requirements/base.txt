@@ -4,10 +4,10 @@ future>=0.16.0
 mock>=2.0.0
 numpy>=1.14.0rc1
 pandas==0.18.1
--e git+https://github.com/pydata/pandas-datareader@master#egg=pandas-datareader
+git+https://github.com/pydata/pandas-datareader@0debb02#egg=pandas-datareader
 python-dateutil>=2.6.1
 pytz>=2017.3
 requests>=2.18.4
 six>=1.11.0
 TA-lib>=0.4.10
--e git+https://github.com/quantopian/zipline.git@e4f555f#egg=zipline
+git+https://github.com/quantopian/zipline.git@27e6abc#egg=zipline
