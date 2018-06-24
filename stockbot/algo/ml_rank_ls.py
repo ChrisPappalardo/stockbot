@@ -24,35 +24,46 @@ from stockbot.algo.core import (
 from stockbot.core import get_sp500_list
 
 
-def initialize(context):
-    return init(
-        context,
-        name='ml_rank_ls',
-        symbols=get_sp500_list(),
-        capital_ppt=1.0/(5.0 + 5.0),
-        fillna='bfill',
-        fillna_limit=0.34,
-        log=Logger('Stockbot'),
-        top_rank=5,
-        bot_rank=5,
-        window=14,
-        windows=2,
-        accel=0.02,
-        accel_max=0.2,
-        rank=[],
-        top=[],
-        bot=[],
-        model=None,
-        rank_every=14,
-    )
+class Initialize(object):
+    '''
+    class-based initialization for ml_rank_ls enables injectable config
+    '''
+
+    config = {
+        'name': 'ml_rank_ls',
+        'symbols': get_sp500_list(),
+        'capital_ppt': 1.0 / (5.0 + 5.0),
+        'fillna': 'bfill',
+        'fillna_limit': 0.34,
+        'log': Logger('Stockbot'),
+        'top_rank': 5,
+        'bot_rank': 5,
+        'window': 14,
+        'windows': 2,
+        'accel': 0.02,
+        'accel_max': 0.2,
+        'rank': [],
+        'top': [],
+        'bot': [],
+        'model': None,
+        'rank_every': 14,
+    }
+
+    def __init__(self, context):
+        return init(context, **self.config)
+
+
+initialize = Initialize
 
 
 def handle_data(context, data):
-    # increment counter and log datetime
+    '''
+    calls model.rank on rank_every and buys/sells top_rank, bot_rank
+    '''
+
     context.i += 1
     context.sbot['log'].info('processing %s' % context.get_datetime())
 
-    # rank S&P500 stocks if this is a rank iteration
     # subtract 1 from i so first iteration produces a ranking
     if (context.i - 1) / context.sbot['rank_every'] % 1 == 0.0:
         model_rank(
@@ -68,7 +79,6 @@ def handle_data(context, data):
             accel_max=context.sbot['accel_max'],
         )
 
-        # buy the top_rank, sell the bot_rank, close the rest
         trade_top_bot(
             context,
             symbols=[s for (s, rank) in context.sbot['rank']],
