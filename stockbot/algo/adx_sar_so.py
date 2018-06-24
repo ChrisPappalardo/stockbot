@@ -40,6 +40,7 @@ def initialize(context):
         accel=0.02,
         accel_max=0.2,
         so_window=14,
+        rank=[],
         top=[],
         bot=[],
         rank_every=7,

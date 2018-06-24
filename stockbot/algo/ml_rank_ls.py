@@ -39,6 +39,7 @@ def initialize(context):
         windows=2,
         accel=0.02,
         accel_max=0.2,
+        rank=[],
         top=[],
         bot=[],
         model=None,
@@ -68,10 +69,9 @@ def handle_data(context, data):
         )
 
         # buy the top_rank, sell the bot_rank, close the rest
-        if 'rank' in context.sbot:
-            trade_top_bot(
-                context,
-                symbols=[s for (s, rank) in context.sbot['rank']],
-                top=[s for (s, rank) in context.sbot['top']],
-                bot=[s for (s, rank) in context.sbot['bot']],
-            )
+        trade_top_bot(
+            context,
+            symbols=[s for (s, rank) in context.sbot['rank']],
+            top=[s for (s, rank) in context.sbot['top']],
+            bot=[s for (s, rank) in context.sbot['bot']],
+        )

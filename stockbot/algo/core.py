@@ -678,9 +678,6 @@ def trade_top_bot(context,
     fillna
     log
     capital_ppt
-    rank
-    top
-    bot
     '''
 
     c = context.sbot
