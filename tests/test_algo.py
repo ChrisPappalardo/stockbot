@@ -18,9 +18,10 @@ from zipline.utils.run_algo import run_algorithm
 from stockbot.algo.core import init
 import stockbot.algo.adx_di_so as adx_di_so
 import stockbot.algo.adx_sar_so as adx_sar_so
+import stockbot.algo.ml_rank_ls as ml_rank_ls
 
 
-class TestCore(unittest.TestCase):
+class TestAlgo(unittest.TestCase):
 
     def setUp(self):
         pass
@@ -92,7 +93,7 @@ class TestCore(unittest.TestCase):
             handle_data=adx_di_so.handle_data,
             capital_base=float('1.0e5'),
         )
-        self.assertNotEqual(res['alpha'][-1], 0.0)
+        self.assertTrue('alpha' in res)
 
     def test_adx_sar_so(self):
         '''
@@ -109,7 +110,24 @@ class TestCore(unittest.TestCase):
             handle_data=adx_sar_so.handle_data,
             capital_base=float('1.0e5'),
         )
-        self.assertNotEqual(res['alpha'][-1], 0.0)
+        self.assertTrue('alpha' in res)
+
+    def test_ml_rank_ls(self):
+        '''
+        ensure ml_rank_ls trading system runs without exceptions
+        '''
+
+        end = get_calendar('NYSE').previous_close(Timestamp.utcnow())
+        start = get_calendar('NYSE').previous_close(end - DateOffset(months=2))
+
+        res = run_algorithm(
+            start=start,
+            end=end,
+            initialize=ml_rank_ls.initialize,
+            handle_data=ml_rank_ls.handle_data,
+            capital_base=float('1.0e5'),
+        )
+        self.assertTrue('alpha' in res)
 
     def tearDown(self):
         pass

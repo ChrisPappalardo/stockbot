@@ -255,6 +255,136 @@ def adx_rank(context,
     c['log'].info('ranked top %s %s and bot %s %s' % v)
 
 
+def model_rank(context,
+               data,
+               model,
+               symbols,
+               top_rank=5,
+               bot_rank=5,
+               window=14,
+               windows=2,
+               accel=0.02,
+               accel_max=0.2):
+    '''
+    rank symbols using model.rank method and store top_rank, bot_rank
+
+    :param context: the context for the trading system
+    :param data: data for the trading system
+    :param model: the model to use, e.g. a trained Machine Learning model
+    :param symbols: the universe of symbols to trade
+    :param top_rank: the number of trending instruments to store
+    :param bot_rank: the number of oscillating instruments to store
+    :param window: the base window period for TIs
+    :param window: the number of windows of history required
+    :param accel: the acceleration factor
+    :param accel_max: the max acceleration factor
+    :type context: `zipline.algorithm.TradingAlgorithm`
+    :type data: `zipline.data.data_portal.DataPortal`
+    :type model: `object` with `rank` method that accepts discrete data
+    :type symbols: `list` of ...
+    :type top_rank: `int`
+    :type bot_rank: `int`
+    :type window: `int`
+    :type windows: `int`
+    :type accel: `float`
+    :type accel_max: `float`
+
+    expects the following in `context`:
+
+    i
+    fillna
+    log
+    '''
+
+    rank = dict()
+    c = context.sbot
+
+    # ensure we have enough history
+    if context.i < window * windows:
+        return
+
+    for s in symbols:
+
+        input = _get_data(
+            data,
+            symbol=s,
+            window=window*windows,
+            freq='1d',
+            fields=['high', 'low', 'close'],
+            fillna=c['fillna'],
+            fillna_limit=c['fillna_limit'],
+        )
+
+        if input is None:
+            continue
+
+        try:
+
+            adx = ADX(
+                np.array(input['high']),
+                np.array(input['low']),
+                np.array(input['close']),
+            )
+            minus_di = PLUS_DI(
+                np.array(input['high']),
+                np.array(input['low']),
+                np.array(input['close']),
+                timeperiod=window,
+            )
+            plus_di = PLUS_DI(
+                np.array(input['high']),
+                np.array(input['low']),
+                np.array(input['close']),
+                timeperiod=window,
+            )
+            sar = SAR(
+                np.array(input['high']),
+                np.array(input['low']),
+                accel,
+                accel_max,
+            )
+            so_k, so_d = STOCH(
+                np.array(input['high']),
+                np.array(input['low']),
+                np.array(input['close']),
+                fastk_period=window,
+            )
+
+            # TODO: replace args with a single np.array
+            model_rank = model.rank(
+                adx,
+                minus_di,
+                plus_di,
+                sar,
+                so_k,
+                so_d,
+                input['high'][-1],
+                input['low'][-1],
+                input['close'][-1],
+            )
+
+            if np.isnan(model_rank[-1]):
+                c['log'].warn('ml_rank for %s is NaN' % s)
+
+            else:
+                rank[s] = model_rank[-1]
+
+        except Exception as e:
+
+            if 'inputs are all NaN' in str(e):
+                c['log'].warn('NaN inputs for %s' % s)
+
+            else:  # pragma: no cover
+                raise
+
+    c['rank'] = sorted(rank.items(), key=lambda t: t[1], reverse=True)
+    c['top'] = c['rank'][:c['top_rank']]
+    c['bot'] = c['rank'][-c['bot_rank']:]
+
+    v = (c['top_rank'], c['top'], c['bot_rank'], c['bot'])
+    c['log'].info('ranked top %s %s and bot %s %s' % v)
+
+
 def trade_di(context,
              data,
              t_symbols,
@@ -525,6 +655,64 @@ def trade_so(context,
             'so_d': so_d,
             'order_type': order_type,
             'symbols': o_symbols,
+            'positions': p,
+        }
+        c['_order_meta'][order_id] = _meta
+
+
+def trade_top_bot(context,
+                  symbols,
+                  top,
+                  bot):
+    '''
+    zipline trading algorithm that goes long the top_rank,
+    short the bot_rank, and closes out any other positions
+
+    :param context: the context for the trading system
+    :type context: `zipline.algorithm.TradingAlgorithm`
+
+    expects the following in `context`:
+
+    i
+    portfolio.positions
+    fillna
+    log
+    capital_ppt
+    rank
+    top
+    bot
+    '''
+
+    c = context.sbot
+    p = context.portfolio.positions
+
+    for s in set(list(p) + symbols):
+
+        order_type = 'close'
+
+        if s in top:
+            order_type = 'long'
+
+        elif s in bot:
+            order_type = 'short'
+
+        # place order
+        target = _get_order_target(
+            symbol=s,
+            order_type=order_type,
+            symbols=symbols,
+            positions=p,
+            capital_ppt=c['capital_ppt'],
+        )
+        order_id = order_target_percent(s, target)
+
+        # store analytic information for order_id
+        _meta = {
+            'system': 'top_bot',
+            'order_type': order_type,
+            'symbols': symbols,
+            'top': top,
+            'bot': bot,
             'positions': p,
         }
         c['_order_meta'][order_id] = _meta
