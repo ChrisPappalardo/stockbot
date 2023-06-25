@@ -11,9 +11,10 @@ Stockbot
 
 Stock market analysis library written in Python.
 
-* Copyright (C) 2016-2017 by Chris Pappalardo <cpappala@yahoo.com>
+* Copyright (C) 2016-2017 by Chris Pappalardo <cpappala@gmail.com>
 * License: `Creative Commons (CC) BY-NC-ND 4.0 <https://creativecommons.org/licenses/by-nc-nd/4.0/>`_
 * Documentation: https://stockbot-lib.readthedocs.org/
+* Live demo: https://stockbot.tech
 
 
 Features
